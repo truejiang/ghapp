@@ -1,0 +1,22 @@
+id: Optional[int] = Field(primary_key=True, index=True)
+goods_name: str = Field(nullable=False)  # 商品标题
+goods_id: str = Field(nullable=False)  # 商品ID
+shop: str = Field(nullable=False)  # 店铺名称
+payment_timestamp: datetime = Field(nullable=False, default=datetime.now())  # 付款时间
+settlement_timestamp: datetime = Field(nullable=False, default=datetime.now())  # 结算时间
+order_number: str = Field(nullable=False)  # 订单编号
+order_status: str = Field(nullable=False)  # 订单状态
+payment_amount: str = Field(nullable=False)  # 付款金额
+order_type: str = Field(nullable=False)  # 订单类型
+commission_rate: float = Field(nullable=False)  # 提成比
+estimated_revenue: float = Field(nullable=False)  # 预估收入
+estimated_technical_service_fee: float = Field(nullable=False)  # 预估技术服务费
+account_name: str = Field(nullable=False)  # 抖音号名称(备注)
+account_id: str = Field(nullable=False)  # 抖音ID
+account_uid: str = Field(nullable=False)  # 抖音UID
+operator: str = Field(nullable=True)  # 运营人
+data_source: str = Field(nullable=True)  # 数据来源
+created_by_userid: Optional[int] = Field(nullable=False)  # 创建人
+created_timestamp: datetime = Field(nullable=False, default=datetime.now())  # 创建时间
+modified_by_userid: Optional[int] = Field(nullable=False)
+modified_timestamp: datetime = Field(nullable=False, default=datetime.now())
