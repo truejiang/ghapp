@@ -46,6 +46,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       <ProFormSelect
         name="cooperator_id"
         label="联创信息"
+        showSearch
         request={async () => {
           const res = await getCooperators({});
 
@@ -62,6 +63,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
       <ProFormSelect
         name="account_id"
         label="账号"
+        showSearch
         request={async () => {
           const res = await getAccounts({});
 

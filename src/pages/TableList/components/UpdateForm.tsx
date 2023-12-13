@@ -121,6 +121,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         <ProFormSelect
           name="target"
           width="md"
+          showSearch
           label={intl.formatMessage({
             id: 'pages.searchTable.updateForm.object',
             defaultMessage: '监控对象',

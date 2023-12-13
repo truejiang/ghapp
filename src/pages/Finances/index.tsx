@@ -317,15 +317,17 @@ const TableList: React.FC = () => {
         <ProFormSelect
           name="cooperator_id"
           label="联创信息"
-          request={async () => {
-            const res = await getCooperators({});
-            return (
-              res.data?.map((_) => ({
-                label: _.name,
-                value: _.id,
-              })) || []
-            );
+          fieldProps={{
+            showSearch:  true,
+            filterOption: (inputValue, option) => {
+              return (option?.label ?? '').toLowerCase().includes(inputValue.toLowerCase()) || (option?.value ?? '')?.toString().includes(inputValue.toLowerCase())
+            }
           }}
+  
+          options={cooperatorList?.map(_ => ({
+            label: _.name,
+            value: _.id
+          }))}
           
           placeholder="请选择一个联创信息"
           rules={[{ required: true, message: '请选择联创信息' }]}
@@ -333,16 +335,16 @@ const TableList: React.FC = () => {
         <ProFormSelect
           name="account_id"
           label="账号"
-          request={async () => {
-            const res = await getAccounts({});
-
-            return (
-              res.data?.map((_) => ({
-                label: _.account_name,
-                value: _.account_id,
-              })) || []
-            );
+          fieldProps={{
+            showSearch:  true,
+            filterOption: (inputValue, option) => {
+              return (option?.label ?? '').toLowerCase().includes(inputValue.toLowerCase()) || (option?.value ?? '')?.toString().includes(inputValue.toLowerCase())
+            }
           }}
+          options={accountList?.map(_ => ({
+            label: _.account_name,
+            value: _.account_id
+          }))}
           placeholder="请选择联一个账号"
           rules={[{ required: true, message: '请选择联一个账号' }]}
         />

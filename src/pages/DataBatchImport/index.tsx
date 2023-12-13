@@ -1,14 +1,15 @@
+import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { download } from '@/utils/dowload';
-import { getToken } from '@/utils/indexs';
 import { FileExcelOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import {  history, useRequest } from '@umijs/max';
+import { history, useRequest } from '@umijs/max';
 import {
   Button,
   Card,
   Col,
   Divider,
+  Empty,
   Flex,
   message,
   notification,
@@ -18,11 +19,11 @@ import {
   Spin,
   Statistic,
   Upload,
-  Empty
 } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import CountUp from 'react-countup';
+
 
 const TableList: React.FC = () => {
   const [create_related_data, set_create_related_data] = useState(true);
@@ -35,6 +36,30 @@ const TableList: React.FC = () => {
   const { data } = useRequest(() => getTemplateOptions());
   const [data_source, set_data_source] = useState('');
 
+  const [file_list, set_file_list] = useState([]);
+  const [uploading, setUploading] = useState(false);
+
+  const { run: runDataBatchImport } = useRequest(dataBatchImport, {
+    manual: true
+  })
+  // useRequest()
+
+  const handleUpload = () => {
+    setUploading(true);
+    runDataBatchImport({
+      data_source,
+      file_list
+    }).then(() => {
+        set_file_list([]);
+        message.success('upload successfully.');
+      })
+      .catch(() => {
+        message.error('upload failed.');
+      })
+      .finally(() => {
+        setUploading(false);
+      });
+  };
   const formatter = (value: number) => <CountUp end={value} separator="," />;
 
   const jump = (path: string) => {
@@ -43,7 +68,7 @@ const TableList: React.FC = () => {
 
   return (
     <PageContainer>
-      <Flex justify="flex-end" align="center" style={{ marginBottom: '12px' }}>
+      <Flex align="center" style={{ marginBottom: '12px' }}>
         <Space>
           <Button
             icon={<FileExcelOutlined />}
@@ -72,62 +97,44 @@ const TableList: React.FC = () => {
             onChange={set_data_source}
             options={data}
           />
-          {/* <span>是否从销售数据中创建其他相关数据</span> */}
-          {/* <Select
-            style={{ width: 240 }}
-            placeholder="是否从销售数据中创建其他相关数据"
-            onChange={set_create_related_data}
-            options={[
-              { value: true, label: '是' },
-              { value: false, label: '否' },
-            ]}
-          /> */}
-          <Spin spinning={spinning}>
-            <Upload
-              maxCount={1}
-              action={`/api/v1/tools/upload/goods_sales_excel?data_source=${data_source}&create_related_data=${create_related_data}`}
-              headers={{
-                Authorization: getToken() || '',
-              }}
-              showUploadList={false}
-              beforeUpload={() => {
-                setSpinning(true);
-                if (!data_source) {
-                  setSpinning(false);
-                  message.warning('请选择上传平台');
-                  return false;
-                }
-              }}
-              onChange={(info) => {
-                const { file } = info;
-                if (file.status === 'done') {
-                  console.log(info);
-                  setSpinning(false);
-
-                  const { response = {} } = file;
-                  const { records = {} } = response;
-                  const { execute_info } = records;
-                  notification.success({
-                    message: '更新成功',
-                  });
-                  setexecute_info(execute_info);
-                  // message.success('上传成功！正在更新表格数据');
-                } else if (file.status === 'error') {
-                  setSpinning(false);
-                  notification.error({
-                    message: '上传失败，请重试',
-                  });
-                }
-              }}
-            >
-              <Button icon={<UploadOutlined />}>点击上传</Button>
-            </Upload>
-          </Spin>
+          <Button
+            type="primary"
+            onClick={handleUpload}
+            disabled={file_list.length === 0}
+            loading={uploading}
+          >
+            {uploading ? '上传中...' : '开始上传'}
+          </Button>
         </Space>
+      </Flex>
+      <Flex>
+        <Spin spinning={spinning}>
+          <Upload
+            multiple
+            beforeUpload={(file) => {
+              set_file_list([...file_list, file])
+              return false
+            }}
+            fileList={file_list}
+            onRemove={
+              (file) => {
+                const index = file_list.indexOf(file);
+                const newFileList = file_list.slice();
+                newFileList.splice(index, 1);
+                set_file_list(newFileList);
+              }
+            }
+          >
+            <Button icon={<UploadOutlined />}>点击选择文件</Button>
+          </Upload>
+        </Spin>
       </Flex>
       <Divider />
       {isEmpty(execute_info) ? (
-        <Empty style={{marginTop: '100px'}} description={'暂无更新数据，请在右上角上传后查看！'}></Empty>
+        <Empty
+          style={{ marginTop: '100px' }}
+          description={'暂无更新数据，请在右上角上传后查看！'}
+        ></Empty>
       ) : (
         <Row gutter={16}>
           {execute_info?.goods_sales && (

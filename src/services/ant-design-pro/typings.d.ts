@@ -1,6 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 
+import type {  UploadFile } from 'antd/es/upload/interface';
 declare namespace API {
   type CurrentUser = {
     session_id?: string,
@@ -307,5 +308,11 @@ declare namespace API {
   type FinancesReportQuery = {
     start_date: string;
     end_date: string;
+  }
+
+  // 数据批导
+  type DataBatchImport = {
+    data_source: string;
+    file_list: UploadFile[];
   }
 }

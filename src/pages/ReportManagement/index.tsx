@@ -57,6 +57,9 @@ function getTomon() {
   return year + '-' + month + '-' + day;
 }
 
+const filterOption = (input: string, option?: { label: string; value: string }) =>
+  (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
+
 const TableList: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
@@ -84,6 +87,7 @@ const TableList: React.FC = () => {
   const { data } = useRequest(() => getGoodsOrderStatus());
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
   const [order_status_check, set_order_status_check] = useState('');
+  const [cooperator_id_check, set_cooperator_id_check] = useState('');
 
   return (
     <PageContainer>
@@ -97,6 +101,19 @@ const TableList: React.FC = () => {
             options={data}
             maxTagCount={1}
           />
+          <Select
+            mode="multiple"
+            placeholder="请选择联创公司"
+            style={{ width: 200 }}
+            onChange={set_cooperator_id_check}
+            options={cooperatorList?.map(_ => ({
+              label: _.name,
+              value: _.id
+            }))}
+            filterOption={filterOption}
+            maxTagCount={1}
+          />
+          
           {reportType === '联创分账报告' && (
             <>
               <DatePicker.RangePicker
@@ -114,13 +131,14 @@ const TableList: React.FC = () => {
               // if(reportDate.)
               if (isEmpty(order_status_check) || !order_status_check)
                 return message.warning('订单状态未选择');
+              if(isEmpty(cooperator_id_check) || !order_status_check) return message.warning('未选择联创公司')
               if (reportType === '联创分账报告') {
                 const { start_date, end_date } = reportDate.current;
                 if (!start_date || !end_date) return message.warning('时间范围未选择');
                 downloadPost(
                   '/api/v1/tools/download/reports',
-                  { ...reportDate.current, order_status_check, report_name: reportType },
-                  `分账报告 ${start_date}-${end_date}`,
+                  { ...reportDate.current, order_status_check, cooperator_id_check,report_name: reportType },
+                  `${reportType} ${start_date}-${end_date}`,
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else if (reportType === '商品销售日报') {
@@ -131,8 +149,9 @@ const TableList: React.FC = () => {
                     end_date: getTomon(),
                     order_status_check,
                     report_name: reportType,
+                    cooperator_id_check
                   },
-                  `分账报告 ${getTody()}-${getTomon()}`,
+                  `${reportType} ${getTody()}`,
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else {

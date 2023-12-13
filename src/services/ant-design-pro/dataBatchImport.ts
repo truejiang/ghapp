@@ -1,6 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
+import { RcFile, UploadFile } from 'antd/es/upload/interface';
 import { isEmpty } from 'lodash'
 
 /** 获取财务列表 GET /api/v1/finances/ */
@@ -105,6 +106,23 @@ export async function downloadReport(params: API.FinancesReportQuery, options?: 
   return request<API.FinancesReportQuery>('/api/v1/finances/report/download/', {
     method: 'POST',
     params,
+    ...(options || {}),
+  });
+}
+
+export async function dataBatchImport(data: {data_source: string, file_list: UploadFile[]}, options?: { [key: string]: any }) {
+  const { data_source, file_list = [] } = data
+  const formData = new FormData();
+    file_list.forEach((file) => {
+      formData.append('file_list', file as RcFile);
+    });
+
+  return request('/api/v1/tools/upload/excel_list', {
+    method: 'POST',
+    data: formData,
+    params: {
+      data_source
+    },
     ...(options || {}),
   });
 }
