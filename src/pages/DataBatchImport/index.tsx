@@ -27,6 +27,7 @@ import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 import CountUp from 'react-countup';
 
+
 const TableList: React.FC = () => {
   const [create_related_data, set_create_related_data] = useState(true);
 
@@ -236,6 +237,28 @@ const TableList: React.FC = () => {
             <Button ref={ref2} icon={<UploadOutlined />}>
               点击选择文件
             </Button>
+          </Upload>
+        </Spin>
+      </Flex>
+      <Flex>
+        <Spin spinning={spinning}>
+          <Upload
+            multiple
+            beforeUpload={(file) => {
+              set_file_list([...file_list, file])
+              return false
+            }}
+            fileList={file_list}
+            onRemove={
+              (file) => {
+                const index = file_list.indexOf(file);
+                const newFileList = file_list.slice();
+                newFileList.splice(index, 1);
+                set_file_list(newFileList);
+              }
+            }
+          >
+            <Button icon={<UploadOutlined />}>点击选择文件</Button>
           </Upload>
         </Spin>
       </Flex>
