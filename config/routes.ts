@@ -68,11 +68,11 @@ export default [
         name: '分账管理',
         component: './Finances',
       },
-      {
-        path: '/finances/report',
-        name: '分账报告',
-        component: './Finances/Split',
-      },
+      // {
+      //   path: '/finances/report',
+      //   name: '分账报告',
+      //   component: './Finances/Split',
+      // },
 
     ],
   },
@@ -99,6 +99,12 @@ export default [
     icon: 'ImportOutlined',
     path: '/data-batch-import',
     component: './DataBatchImport',
+  },
+  {
+    name: '报告管理',
+    icon: 'table',
+    path: '/report-management',
+    component: './ReportManagement',
   },
   {
     path: '*',

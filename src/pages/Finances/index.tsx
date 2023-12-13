@@ -319,7 +319,6 @@ const TableList: React.FC = () => {
           label="联创信息"
           request={async () => {
             const res = await getCooperators({});
-
             return (
               res.data?.map((_) => ({
                 label: _.name,
@@ -327,6 +326,7 @@ const TableList: React.FC = () => {
               })) || []
             );
           }}
+          
           placeholder="请选择一个联创信息"
           rules={[{ required: true, message: '请选择联创信息' }]}
         />
