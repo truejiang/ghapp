@@ -1,5 +1,6 @@
 import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
+import { download } from '@/utils/dowload';
 import { CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { history, request, useRequest } from '@umijs/max';
@@ -19,6 +20,7 @@ import {
   Statistic,
   Tour,
   Upload,
+  FloatButton
 } from 'antd';
 import { RcFile } from 'antd/es/upload/interface';
 import { isEmpty } from 'lodash';
@@ -32,6 +34,8 @@ const TableList: React.FC = () => {
   const ref1 = useRef<HTMLButtonElement>(null);
   const ref2 = useRef<HTMLButtonElement>(null);
   const ref3 = useRef<HTMLButtonElement>(null);
+  const ref4 = useRef<HTMLButtonElement>(null);
+  
 
   const steps: TourProps['steps'] = [
     {
@@ -47,6 +51,11 @@ const TableList: React.FC = () => {
     {
       title: '第三步：点击上传',
       description: '点击上传后开始导入数据，更新的信息会在下面卡片显示。',
+      target: () => ref3.current!,
+    },
+    {
+      title: '提示：模版下载',
+      description: '如果想主动更新模版可以先在左上角选择模版平台，然后点击右下角按钮下载！',
       target: () => ref3.current!,
     },
   ];
@@ -154,6 +163,22 @@ const TableList: React.FC = () => {
   const jump = (path: string) => {
     history.push(path);
   };
+
+  const downloadTemp = async () => {
+    const template_filename = data.find(_ => _.value === data_source)?.template_filename;
+    console.log(template_filename)
+    if(!template_filename) {
+      return message.warning('在左上角选择模版的平台吧')
+    }
+    download(
+      '/api/v1/goods/templates/download', 
+      {
+        template_filename
+      },
+      template_filename,
+      'get' 
+    )
+  }
 
   return (
     <PageContainer>
@@ -418,6 +443,10 @@ const TableList: React.FC = () => {
           )}
         </Row>
       )}
+      <div>
+      <FloatButton  onClick={downloadTemp} tooltip={<div>点击可下载模版，需要先在左上角选择好平台。如有操作问题可以随时联系技术人员</div>} 
+      description={<div ref={ref4}>模版下载</div>}/>
+      </div>
     </PageContainer>
   );
 };
