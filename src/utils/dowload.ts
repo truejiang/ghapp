@@ -59,3 +59,40 @@ export function downloadPost(
       // })
     });
 }
+
+/**
+ * 触发从指定 URL 下载文件，文件名自动从 URL 提取和解码（如果需要）。
+ * @param {string} downloadUrl - 需要下载文件的 URL。
+ */
+export function downloadFile(downloadUrl: string): void {
+  // 从 URL 中提取文件名
+  const urlParts = downloadUrl.split('/');
+  let fileName = urlParts[urlParts.length - 1] || 'download';
+
+  // 尝试解码文件名，如果它包含百分号编码
+  if (fileName.includes('%')) {
+    try {
+      fileName = decodeURIComponent(fileName);
+    } catch (e) {
+      // 如果解码过程中出现错误，保持原始编码的文件名
+      console.error('Error decoding the URL component:', e);
+    }
+  }
+
+  // 创建一个隐藏的 a 标签
+  const element = document.createElement('a');
+  element.href = downloadUrl;
+  element.download = fileName;
+
+  // 将其设置为隐藏
+  element.style.display = 'none';
+
+  // 将其添加到 DOM 中
+  document.body.appendChild(element);
+
+  // 模拟点击下载
+  element.click();
+
+  // 从 DOM 中移除
+  document.body.removeChild(element);
+}

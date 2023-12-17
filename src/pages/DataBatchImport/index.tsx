@@ -1,7 +1,12 @@
 import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
-import { download } from '@/utils/dowload';
-import { CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
+import { download, downloadFile } from '@/utils/dowload';
+import {
+  CheckCircleOutlined,
+  ExclamationCircleOutlined,
+  InfoCircleOutlined,
+  UploadOutlined,
+} from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { history, request, useRequest } from '@umijs/max';
 import {
@@ -11,6 +16,7 @@ import {
   Divider,
   Empty,
   Flex,
+  FloatButton,
   message,
   notification,
   Row,
@@ -20,12 +26,13 @@ import {
   Statistic,
   Tour,
   Upload,
-  FloatButton
 } from 'antd';
 import { RcFile } from 'antd/es/upload/interface';
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 import CountUp from 'react-countup';
+import helpPng from './help.png'
+import { TourProps } from 'antd/lib/tour/interface';
 
 const TableList: React.FC = () => {
   const [create_related_data, set_create_related_data] = useState(true);
@@ -35,7 +42,7 @@ const TableList: React.FC = () => {
   const ref2 = useRef<HTMLButtonElement>(null);
   const ref3 = useRef<HTMLButtonElement>(null);
   const ref4 = useRef<HTMLButtonElement>(null);
-  
+  const ref5 = useRef<HTMLButtonElement>(null);
 
   const steps: TourProps['steps'] = [
     {
@@ -54,15 +61,31 @@ const TableList: React.FC = () => {
       target: () => ref3.current!,
     },
     {
+      title: '第四步：查看结果',
+      description: '上传成功后下方卡片会更新不同模块的跟新数据，异常未关联数据可点击下载模版修改后重新上传更新。详细信息可参考上图标注。',
+      target: () => ref4.current!,
+      cover: (
+        <img
+          alt="tour.png"
+          src={helpPng}
+        />
+      ),
+    },
+    {
       title: '提示：模版下载',
       description: '如果想主动更新模版可以先在左上角选择模版平台，然后点击右下角按钮下载！',
-      target: () => ref3.current!,
+      target: () => ref5.current!,
     },
   ];
 
   const [spinning, setSpinning] = React.useState<boolean>(false);
   const [execute_info, setexecute_info] = React.useState<{
-    [key: string]: { exists: number; updated: number; inserted: number };
+    [key: string]: {
+      extra: any;
+      exists: number;
+      updated: number;
+      inserted: number;
+    };
   }>(false);
 
   const { data } = useRequest(() => getTemplateOptions());
@@ -165,20 +188,20 @@ const TableList: React.FC = () => {
   };
 
   const downloadTemp = async () => {
-    const template_filename = data.find(_ => _.value === data_source)?.template_filename;
-    console.log(template_filename)
-    if(!template_filename) {
-      return message.warning('在左上角选择模版的平台吧')
+    const template_filename = data.find((_) => _.value === data_source)?.template_filename;
+    console.log(template_filename);
+    if (!template_filename) {
+      return message.warning('在左上角选择模版的平台吧');
     }
     download(
-      '/api/v1/goods/templates/download', 
+      '/api/v1/goods/templates/download',
       {
-        template_filename
+        template_filename,
       },
       template_filename,
-      'get' 
-    )
-  }
+      'get',
+    );
+  };
 
   return (
     <PageContainer>
@@ -211,7 +234,7 @@ const TableList: React.FC = () => {
           >
             {uploading ? '上传中...' : '开始上传'}
           </Button>
-          <Button type="primary" onClick={() => setOpen(true)}>
+          <Button style={{ marginLeft: 'auto' }} type="primary" onClick={() => setOpen(true)}>
             操作指引
           </Button>
         </Space>
@@ -240,212 +263,220 @@ const TableList: React.FC = () => {
         </Spin>
       </Flex>
       <Divider />
-      {isEmpty(execute_info) ? (
-        <Empty
-          style={{ marginTop: '100px' }}
-          description={'暂无更新数据，请在左上角上传后查看！'}
-        ></Empty>
-      ) : (
-        <Row gutter={16}>
-          {execute_info?.goods_sales && (
-            <Col span={12}>
-              <Card
-                bordered={false}
-                title="商品销售"
-                extra={
-                  <Button type="link" block onClick={() => jump('/goods/sales')}>
-                    去页面查看
-                  </Button>
-                }
-              >
-                <Row>
-                  <Col span={8}>
-                    <Statistic
-                      title="现存数量"
-                      value={execute_info?.goods_sales?.exists}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="新增数量"
-                      value={execute_info?.goods_sales?.inserted}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="更新数量"
-                      value={execute_info?.goods_sales?.updated}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                </Row>
-                <Row style={{ marginTop: '12px' }}>
-                  <Col span={12}>
-                    <Statistic
-                      title="未找到关联商品佣金"
-                      value={10}
-                      precision={2}
-                      valueStyle={{ color: '#cf1322' }}
-                      formatter={formatter}
-                      prefix={<InfoCircleOutlined />}
-                    />
-                  </Col>
-                  <Col span={12} >
-                  <Statistic
-                      title="未找到关联财务分账配置"
-                      value={12}
-                      precision={2}
-                      valueStyle={{ color: '#cf1322' }}
-                      formatter={formatter}
-                      prefix={<InfoCircleOutlined />}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          )}
-          {execute_info?.goods_commission && (
-            <Col span={12}>
-              <Card
-                bordered={false}
-                title="商品佣金"
-                extra={
-                  <Button type="link" block onClick={() => jump('/goods/commission-management')}>
-                    去页面查看
-                  </Button>
-                }
-              >
-                <Row>
-                  <Col span={8}>
-                    <Statistic
-                      title="现存数量"
-                      value={execute_info?.goods_commission?.exists}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="新增数量"
-                      value={execute_info?.goods_commission?.inserted}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="更新数量"
-                      value={execute_info?.goods_commission?.updated}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          )}
-          {execute_info?.account && (
-            <Col span={12} style={{ marginTop: '20px' }}>
-              <Card
-                bordered={false}
-                title="账号管理"
-                extra={
-                  <Button type="link" block onClick={() => jump('/accounts')}>
-                    去页面查看
-                  </Button>
-                }
-              >
-                <Row>
-                  <Col span={8}>
-                    <Statistic
-                      title="现存数量"
-                      value={execute_info?.account?.exists}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="新增数量"
-                      value={execute_info?.account?.inserted}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="更新数量"
-                      value={execute_info?.account?.updated}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          )}
-          {execute_info?.cooperator && (
-            <Col span={12} style={{ marginTop: '20px' }}>
-              <Card
-                bordered={false}
-                title="联创公司"
-                extra={
-                  <Button type="link" block onClick={() => jump('/cooperator-list')}>
-                    去页面查看
-                  </Button>
-                }
-              >
-                <Row>
-                  <Col span={8}>
-                    <Statistic
-                      title="现存数量"
-                      value={execute_info?.cooperator?.exists}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="新增数量"
-                      value={execute_info?.cooperator?.inserted}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                  <Col span={8}>
-                    <Statistic
-                      title="更新数量"
-                      value={execute_info?.cooperator?.updated}
-                      precision={2}
-                      valueStyle={{ color: '#3f8600' }}
-                      formatter={formatter}
-                    />
-                  </Col>
-                </Row>
-              </Card>
-            </Col>
-          )}
-        </Row>
-      )}
+      <div ref={ref4}>
+        {isEmpty(execute_info) ? (
+          <Empty
+            style={{ marginTop: '100px' }}
+            description={'暂无更新数据，请在左上角上传后查看！'}
+          ></Empty>
+        ) : (
+          <Row gutter={16}>
+            {execute_info?.goods_sales && (
+              <Col span={12}>
+                <Card
+                  bordered={false}
+                  title="商品销售"
+                  extra={
+                    <Button type="link" block onClick={() => jump('/goods/sales')}>
+                      去页面查看
+                    </Button>
+                  }
+                >
+                  <Row>
+                    <Col span={8}>
+                      <Statistic
+                        title="现存数量"
+                        value={execute_info?.goods_sales?.exists}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="新增数量"
+                        value={execute_info?.goods_sales?.inserted}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="更新数量"
+                        value={execute_info?.goods_sales?.updated}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                  </Row>
+                  {Array.isArray(execute_info?.goods_sales?.extra) && (
+                    <Row style={{ marginTop: '12px' }}>
+                      {execute_info?.goods_sales?.extra.map((item) => (
+                        <Col span={12}>
+                          <Statistic
+                            title={item.data_source + '未关联数量'}
+                            value={item.maintainable || 0}
+                            precision={2}
+                            valueStyle={{ color: '#cf1322' }}
+                            formatter={formatter}
+                            prefix={<InfoCircleOutlined />}
+                          />
+                          <Button
+                            danger
+                            onClick={() => downloadFile(item.template_file || '')}
+                            style={{ marginTop: '10px' }}
+                          >
+                            下载修改
+                          </Button>
+                        </Col>
+                      ))}
+                    </Row>
+                  )}
+                </Card>
+              </Col>
+            )}
+            {execute_info?.goods_commission && (
+              <Col span={12}>
+                <Card
+                  bordered={false}
+                  title="商品佣金"
+                  extra={
+                    <Button type="link" block onClick={() => jump('/goods/commission-management')}>
+                      去页面查看
+                    </Button>
+                  }
+                >
+                  <Row>
+                    <Col span={8}>
+                      <Statistic
+                        title="现存数量"
+                        value={execute_info?.goods_commission?.exists}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="新增数量"
+                        value={execute_info?.goods_commission?.inserted}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="更新数量"
+                        value={execute_info?.goods_commission?.updated}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            )}
+            {execute_info?.account && (
+              <Col span={12} style={{ marginTop: '20px' }}>
+                <Card
+                  bordered={false}
+                  title="账号管理"
+                  extra={
+                    <Button type="link" block onClick={() => jump('/accounts')}>
+                      去页面查看
+                    </Button>
+                  }
+                >
+                  <Row>
+                    <Col span={8}>
+                      <Statistic
+                        title="现存数量"
+                        value={execute_info?.account?.exists}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="新增数量"
+                        value={execute_info?.account?.inserted}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="更新数量"
+                        value={execute_info?.account?.updated}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            )}
+            {execute_info?.cooperator && (
+              <Col span={12} style={{ marginTop: '20px' }}>
+                <Card
+                  bordered={false}
+                  title="联创公司"
+                  extra={
+                    <Button type="link" block onClick={() => jump('/cooperator-list')}>
+                      去页面查看
+                    </Button>
+                  }
+                >
+                  <Row>
+                    <Col span={8}>
+                      <Statistic
+                        title="现存数量"
+                        value={execute_info?.cooperator?.exists}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="新增数量"
+                        value={execute_info?.cooperator?.inserted}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                    <Col span={8}>
+                      <Statistic
+                        title="更新数量"
+                        value={execute_info?.cooperator?.updated}
+                        precision={2}
+                        valueStyle={{ color: '#3f8600' }}
+                        formatter={formatter}
+                      />
+                    </Col>
+                  </Row>
+                </Card>
+              </Col>
+            )}
+          </Row>
+        )}
+      </div>
       <div>
-      <FloatButton  onClick={downloadTemp} tooltip={<div>点击可下载模版，需要先在左上角选择好平台。如有操作问题可以随时联系技术人员</div>} 
-      description={<div ref={ref4}>模版下载</div>}/>
+        <FloatButton
+          onClick={downloadTemp}
+          tooltip={
+            <div>点击可下载模版，需要先在左上角选择好平台。如有操作问题可以随时联系技术人员</div>
+          }
+          description={<div ref={ref5}>模版下载</div>}
+        />
       </div>
     </PageContainer>
   );

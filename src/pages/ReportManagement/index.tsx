@@ -158,6 +158,7 @@ const TableList: React.FC = () => {
           <Button
             type="primary"
             onClick={() => setOpen(true)}
+            style={{marginLeft: 'auto'}}
           >
             操作指引
           </Button>
