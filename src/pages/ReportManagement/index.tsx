@@ -29,9 +29,6 @@ function getNextDay(dateString: string): string {
 const filterOption = (input: string, option?: { label: string; value: string }) =>
   (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
-const filterOption = (input: string, option?: { label: string; value: string }) =>
-  (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
-
 const TableList: React.FC = () => {
   /**
    * @en-US The pop-up window of the distribution update window
@@ -51,7 +48,30 @@ const TableList: React.FC = () => {
   const { data } = useRequest(() => getGoodsOrderStatus());
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
   const [order_status_check, set_order_status_check] = useState('');
+  const [cooperator_id_check, set_cooperator_id_check] = useState([]);
 
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const [open, setOpen] = useState(false);
+  const steps = [
+    {
+      title: '第一步：选择下载报告的类型',
+      description: '可以通过阅读描述信息了解注意事项',
+      target: () => ref1.current,
+    },
+    {
+      title: '第二步：选择筛选项',
+      description: '日报选择多天通过sheet分隔',
+      target: () => ref2.current,
+    },
+    {
+      title: '第三步：点击下载报告',
+      description: '下载到本地后可以查看详情内容',
+      target: () => ref3.current,
+    },
+  ];
+  
   return (
     <PageContainer>
       <Tour
@@ -66,24 +86,35 @@ const TableList: React.FC = () => {
       />
       <Flex justify="flex-end" align="center" style={{ marginBottom: '12px' }}>
         <Space>
-          <Select
-            mode="multiple"
-            placeholder="请选择订单状态"
-            style={{ width: 200 }}
-            onChange={set_order_status_check}
-            options={data}
-            maxTagCount={1}
-          />
-          {reportType === '联创分账报告' && (
-            <>
-              <DatePicker.RangePicker
-                onChange={(dates: [any, any], dateStrings: [string, string]) => {
-                  const [start_date, end_date] = dateStrings;
-                  reportDate.current = { start_date, end_date };
-                }}
-              />
-            </>
-          )}
+          <div ref={ref2}>
+            <Select
+              mode="multiple"
+              placeholder="请选择订单状态"
+              style={{ width: 200, marginRight: '12px' }}
+              onChange={set_order_status_check}
+              options={data}
+              maxTagCount={1}
+            />
+            <Select
+              mode="multiple"
+              placeholder="请选择联创公司"
+              style={{ width: 200, marginRight: '12px' }}
+              onChange={set_cooperator_id_check}
+              options={cooperatorList?.map(_ => ({
+                label: _.name,
+                value: _.id
+              }))}
+              filterOption={filterOption}
+              maxTagCount={1}
+            />
+            
+            <DatePicker.RangePicker
+              onChange={(dates: [any, any], dateStrings: [string, string]) => {
+                const [start_date, end_date] = dateStrings;
+                reportDate.current = { start_date, end_date };
+              }}
+            />
+          </div>
           <Button
             ref={ref3}
             icon={<DownloadOutlined />}
@@ -92,6 +123,7 @@ const TableList: React.FC = () => {
               // if(reportDate.)
               if (isEmpty(order_status_check) || !order_status_check)
                 return message.warning('订单状态未选择');
+              // if(reportType === '联创分账报告' && (isEmpty(cooperator_id_check) || !order_status_check)) return message.warning('未选择联创公司')
               if (reportType === '联创分账报告') {
                 const { start_date, end_date } = reportDate.current;
                 if (!start_date || !end_date) return message.warning('时间范围未选择');
@@ -113,7 +145,7 @@ const TableList: React.FC = () => {
                     report_name: reportType,
                     cooperator_id_check
                   },
-                  `分账报告 ${getTody()}-${getTomon()}`,
+                  `${reportType} ${start_date}-${end_date}`,
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else {
