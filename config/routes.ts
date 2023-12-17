@@ -13,7 +13,19 @@
 export default [
   {
     path: '/',
-    redirect: '/goods',
+    redirect: '/data-batch-import',
+  },
+  {
+    name: '数据批导',
+    icon: 'ImportOutlined',
+    path: '/data-batch-import',
+    component: './DataBatchImport',
+  },
+  {
+    name: '报告管理',
+    icon: 'table',
+    path: '/report-management',
+    component: './ReportManagement',
   },
   {
     path: '/user',
@@ -37,7 +49,7 @@ export default [
       },
       {
         path: '/goods/commission-management',
-        name: '商品提成',
+        name: '商品佣金',
         component: './Goods/Management',
       },
       {
@@ -65,7 +77,7 @@ export default [
       },
       {
         path: '/finances/split',
-        name: '分账管理',
+        name: '分账配置',
         component: './Finances',
       },
       // {
@@ -94,18 +106,7 @@ export default [
     path: '/users',
     component: './UserControl',
   },
-  {
-    name: '数据批导',
-    icon: 'ImportOutlined',
-    path: '/data-batch-import',
-    component: './DataBatchImport',
-  },
-  {
-    name: '报告管理',
-    icon: 'table',
-    path: '/report-management',
-    component: './ReportManagement',
-  },
+  
   {
     path: '*',
     layout: false,

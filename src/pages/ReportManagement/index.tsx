@@ -8,54 +8,9 @@ import { DownloadOutlined } from '@ant-design/icons';
 import type { ActionType } from '@ant-design/pro-components';
 import { CheckCard, PageContainer } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import { Button, DatePicker, Flex, message, Select, Space } from 'antd';
+import { Button, DatePicker, Flex, message, Select, Space, Tour } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
-
-// 格式化
-const getLabelById = (list: any[], val: any, key: string, idName = 'id') => {
-  if (!Array.isArray(list)) return '-';
-  return list.find((_) => _[idName] === val)?.[key] || val;
-};
-
-function getTody() {
-  let currentDate = new Date(); // 创建一个表示当前时间的Date对象
-
-  // 获取当前年份
-  let year = currentDate.getFullYear();
-
-  // 获取当前月份（注意JavaScript中月份从0开始计数）
-  let month = currentDate.getMonth() + 1;
-
-  // 获取当前日期
-  let day = currentDate.getDate();
-
-  return year + '-' + month + '-' + day;
-}
-
-function getTomon() {
-  let currentDate = new Date(); // 创建一个表示当前时间的Date对象
-
-  // 获取当前年份
-  let year = currentDate.getFullYear();
-  console.log('当前年份为：' + year);
-
-  // 获取当前月份（注意JavaScript中月份从0开始计数）
-  let month = currentDate.getMonth() + 1;
-  console.log('当前月份为：' + month);
-
-  // 获取当前日期
-  let day = currentDate.getDate();
-  console.log('当前日期为：' + day);
-
-  // 获取明天的日期
-  currentDate.setDate(day + 1); // 将日期设置为下一天
-  year = currentDate.getFullYear();
-  month = currentDate.getMonth() + 1;
-  day = currentDate.getDate();
-
-  return year + '-' + month + '-' + day;
-}
 
 function getNextDay(dateString: string): string {
   const date = new Date(dateString);
@@ -76,20 +31,12 @@ const filterOption = (input: string, option?: { label: string; value: string }) 
 
 const TableList: React.FC = () => {
   /**
-   * @en-US Pop-up window of new window
-   * @zh-CN 新建窗口的弹窗
-   *  */
-  const [createModalOpen, handleModalOpen] = useState<boolean>(false);
-  /**
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
    * */
   const [reportType, setReportType] = useState<string>('');
 
-  const [showDetail, setShowDetail] = useState<boolean>(false);
-
   const actionRef = useRef<ActionType>();
-  const [currentRow, setCurrentRow] = useState<API.FinancesListItem>();
 
   const { data: cooperatorList } = useRequest(() => getCooperators({ current: 1, pageSize: 9999 }));
   const { data: accountList } = useRequest(() => getAccounts({ current: 1, pageSize: 9999 }));
@@ -101,61 +48,82 @@ const TableList: React.FC = () => {
   const { data } = useRequest(() => getGoodsOrderStatus());
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
   const [order_status_check, set_order_status_check] = useState('');
-  const [cooperator_id_check, set_cooperator_id_check] = useState('');
+  const [cooperator_id_check, set_cooperator_id_check] = useState([]);
 
+  const ref1 = useRef(null);
+  const ref2 = useRef(null);
+  const ref3 = useRef(null);
+  const [open, setOpen] = useState(false);
+  const steps = [
+    {
+      title: '第一步：选择下载报告的类型',
+      description: '可以通过阅读描述信息了解注意事项',
+      target: () => ref1.current,
+    },
+    {
+      title: '第二步：选择筛选项',
+      description: '日报选择多天通过sheet分隔',
+      target: () => ref2.current,
+    },
+    {
+      title: '第三步：点击下载报告',
+      description: '下载到本地后可以查看详情内容',
+      target: () => ref3.current,
+    },
+  ];
+  
   return (
     <PageContainer>
+      <Tour
+        open={open}
+        onClose={() => setOpen(false)}
+        steps={steps}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
       <Flex justify="flex-end" align="center" style={{ marginBottom: '12px' }}>
         <Space>
-          <Select
-            mode="multiple"
-            placeholder="请选择订单状态"
-            style={{ width: 200 }}
-            onChange={set_order_status_check}
-            options={data}
-            maxTagCount={1}
-          />
-          <Select
-            mode="multiple"
-            placeholder="请选择联创公司"
-            style={{ width: 200 }}
-            onChange={set_cooperator_id_check}
-            options={cooperatorList?.map(_ => ({
-              label: _.name,
-              value: _.id
-            }))}
-            filterOption={filterOption}
-            maxTagCount={1}
-          />
-          
-          {reportType === '联创分账报告' && (
-            <>
-              <DatePicker.RangePicker
-                onChange={(dates: [any, any], dateStrings: [string, string]) => {
-                  const [start_date, end_date] = dateStrings;
-                  reportDate.current = { start_date, end_date };
-                }}
-              />
-            </>
-          )}
-          {
-            reportType === '商品销售日报' && 
-            <DatePicker onChange={(date, dateString) => {
-              // console.log({date, dateString})
-              const start_date = dateString
-              const end_date = getNextDay(dateString)
-              // const [start_date, end_date] = dateString;
-              reportDate.current = { start_date, end_date };
-            }} />
-          }
+          <div ref={ref2}>
+            <Select
+              mode="multiple"
+              placeholder="请选择订单状态"
+              style={{ width: 200, marginRight: '12px' }}
+              onChange={set_order_status_check}
+              options={data}
+              maxTagCount={1}
+            />
+            <Select
+              mode="multiple"
+              placeholder="请选择联创公司"
+              style={{ width: 200, marginRight: '12px' }}
+              onChange={set_cooperator_id_check}
+              options={cooperatorList?.map(_ => ({
+                label: _.name,
+                value: _.id
+              }))}
+              filterOption={filterOption}
+              maxTagCount={1}
+            />
+            
+            <DatePicker.RangePicker
+              onChange={(dates: [any, any], dateStrings: [string, string]) => {
+                const [start_date, end_date] = dateStrings;
+                reportDate.current = { start_date, end_date };
+              }}
+            />
+          </div>
           <Button
+            ref={ref3}
             icon={<DownloadOutlined />}
             type="primary"
             onClick={() => {
               // if(reportDate.)
               if (isEmpty(order_status_check) || !order_status_check)
                 return message.warning('订单状态未选择');
-              if(isEmpty(cooperator_id_check) || !order_status_check) return message.warning('未选择联创公司')
+              // if(reportType === '联创分账报告' && (isEmpty(cooperator_id_check) || !order_status_check)) return message.warning('未选择联创公司')
               if (reportType === '联创分账报告') {
                 const { start_date, end_date } = reportDate.current;
                 if (!start_date || !end_date) return message.warning('时间范围未选择');
@@ -177,7 +145,7 @@ const TableList: React.FC = () => {
                     report_name: reportType,
                     cooperator_id_check
                   },
-                  `${reportType} ${start_date}`,
+                  `${reportType} ${start_date}-${end_date}`,
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else {
@@ -187,9 +155,15 @@ const TableList: React.FC = () => {
           >
             下载
           </Button>
+          <Button
+            type="primary"
+            onClick={() => setOpen(true)}
+          >
+            操作指引
+          </Button>
         </Space>
       </Flex>
-      <Flex style={{ marginTop: '20px' }}>
+      <Flex ref={ref1} style={{ marginTop: '20px' }}>
         <Space>
           <CheckCard.Group
             onChange={(value) => {
@@ -197,9 +171,10 @@ const TableList: React.FC = () => {
                 setReportType(value);
               }
             }}
+            
           >
             {options?.map((_) => (
-              <CheckCard title={_.label} value={_.value} />
+              <CheckCard title={_.label} value={_.value} description={_.description}/>
             ))}
           </CheckCard.Group>
         </Space>

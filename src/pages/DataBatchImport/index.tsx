@@ -1,7 +1,6 @@
 import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
-import { download } from '@/utils/dowload';
-import { CheckCircleOutlined, ExclamationCircleOutlined, FileExcelOutlined, UploadOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ExclamationCircleOutlined, InfoCircleOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { history, request, useRequest } from '@umijs/max';
 import {
@@ -18,15 +17,39 @@ import {
   Space,
   Spin,
   Statistic,
+  Tour,
   Upload,
 } from 'antd';
 import { RcFile } from 'antd/es/upload/interface';
 import { isEmpty } from 'lodash';
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import CountUp from 'react-countup';
 
 const TableList: React.FC = () => {
   const [create_related_data, set_create_related_data] = useState(true);
+
+  const [open, setOpen] = useState<boolean>(false);
+  const ref1 = useRef<HTMLButtonElement>(null);
+  const ref2 = useRef<HTMLButtonElement>(null);
+  const ref3 = useRef<HTMLButtonElement>(null);
+
+  const steps: TourProps['steps'] = [
+    {
+      title: '第一步：选择模版类型',
+      description: '选择一个需要上传更新的模版，支持抖老板等数据导入，也支持自定义模版',
+      target: () => ref1.current!,
+    },
+    {
+      title: '第二步：选择上传文件',
+      description: '根据选择的模版类型上传对应的文件，支持多个文件',
+      target: () => ref2.current!,
+    },
+    {
+      title: '第三步：点击上传',
+      description: '点击上传后开始导入数据，更新的信息会在下面卡片显示。',
+      target: () => ref3.current!,
+    },
+  ];
 
   const [spinning, setSpinning] = React.useState<boolean>(false);
   const [execute_info, setexecute_info] = React.useState<{
@@ -57,30 +80,36 @@ const TableList: React.FC = () => {
       data: formData,
       params: {
         data_source,
-      }
+      },
     })
       .then((res = {}) => {
-        const {success, message, failure = []} = res
-        console.log(success)
-        if(!isEmpty(success) && Array.isArray(success)) {
+        const { success, message, failure = [] } = res;
+        console.log(success);
+        if (!isEmpty(success) && Array.isArray(success)) {
           notification.open({
             message: '更新成功',
-            description: <div dangerouslySetInnerHTML={{__html: `${message}<br> 本次共更新${success.length}个文件，具体内容如下`}}></div>,
+            description: (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `${message}<br> 本次共更新${success.length}个文件，具体内容如下`,
+                }}
+              ></div>
+            ),
             key: 'error',
             onClose: async () => null,
             icon: <CheckCircleOutlined />,
-            placement: 'top'
-          })
+            placement: 'top',
+          });
           // const { records = {} } = response;
           // const { execute_info } = records;
 
           let summary = {};
 
-          success.forEach(item => {
+          success.forEach((item) => {
             let execute_info = item.records.execute_info;
             for (let key in execute_info) {
               if (!summary[key]) {
-                summary[key] = {...execute_info[key]};
+                summary[key] = { ...execute_info[key] };
               } else {
                 summary[key].inserted += execute_info[key].inserted;
                 summary[key].updated += execute_info[key].updated;
@@ -89,19 +118,27 @@ const TableList: React.FC = () => {
             }
           });
 
-
           setexecute_info(summary);
 
           set_file_list([]);
         } else {
           notification.open({
             message: '错误提示',
-            description: <div dangerouslySetInnerHTML={{__html: `${message}<br>失败的文件如下<br><div style="color: #aa0365">${failure.reduce((curr, prev) => curr += (prev.filename + '<br>'), '')}</div>`}}></div>,
+            description: (
+              <div
+                dangerouslySetInnerHTML={{
+                  __html: `${message}<br>失败的文件如下<br><div style="color: #aa0365">${failure.reduce(
+                    (curr, prev) => (curr += prev.filename + '<br>'),
+                    '',
+                  )}</div>`,
+                }}
+              ></div>
+            ),
             key: 'error',
             onClose: async () => null,
-            icon: <ExclamationCircleOutlined color='#aa0365'/>,
-            placement: 'top'
-          })
+            icon: <ExclamationCircleOutlined color="#aa0365" />,
+            placement: 'top',
+          });
         }
         // message.success('upload successfully.');
       })
@@ -120,42 +157,37 @@ const TableList: React.FC = () => {
 
   return (
     <PageContainer>
+      <Tour
+        open={open}
+        onClose={() => setOpen(false)}
+        steps={steps}
+        indicatorsRender={(current, total) => (
+          <span>
+            {current + 1} / {total}
+          </span>
+        )}
+      />
       <Flex align="center" style={{ marginBottom: '12px' }}>
         <Space>
-          <Button
-            icon={<FileExcelOutlined />}
-            onClick={() => {
-              const template_filename = data.find(
-                (_: { label: any }) => _.label === data_source,
-              )?.template_filename;
-              if (!data_source) return message.error('请选择需下载模板的平台！');
-              download(
-                '/api/v1/tools/download/templates',
-                {
-                  template_filename,
-                },
-                template_filename,
-                'GET',
-              ).then(() => {
-                message.success(`${template_filename}下载成功！`);
-              });
-            }}
-          >
-            模板下载
-          </Button>
-          <Select
-            placeholder="请求选择平台"
-            style={{ width: 180 }}
-            onChange={set_data_source}
-            options={data}
-          />
+          <div ref={ref1}>
+            <Select
+              placeholder="请求选择平台"
+              style={{ width: 180 }}
+              onChange={set_data_source}
+              options={data}
+            />
+          </div>
           <Button
             type="primary"
             onClick={handleUpload}
             disabled={file_list.length === 0}
             loading={uploading}
+            ref={ref3}
           >
             {uploading ? '上传中...' : '开始上传'}
+          </Button>
+          <Button type="primary" onClick={() => setOpen(true)}>
+            操作指引
           </Button>
         </Space>
       </Flex>
@@ -163,8 +195,9 @@ const TableList: React.FC = () => {
         <Spin spinning={spinning}>
           <Upload
             multiple
-            beforeUpload={(file) => {
-              set_file_list([...file_list, file]);
+            beforeUpload={(file, fileList = []) => {
+              console.log(file, fileList);
+              set_file_list([...file_list, ...fileList]);
               return false;
             }}
             fileList={file_list}
@@ -175,7 +208,9 @@ const TableList: React.FC = () => {
               set_file_list(newFileList);
             }}
           >
-            <Button icon={<UploadOutlined />}>点击选择文件</Button>
+            <Button ref={ref2} icon={<UploadOutlined />}>
+              点击选择文件
+            </Button>
           </Upload>
         </Spin>
       </Flex>
@@ -183,7 +218,7 @@ const TableList: React.FC = () => {
       {isEmpty(execute_info) ? (
         <Empty
           style={{ marginTop: '100px' }}
-          description={'暂无更新数据，请在右上角上传后查看！'}
+          description={'暂无更新数据，请在左上角上传后查看！'}
         ></Empty>
       ) : (
         <Row gutter={16}>
@@ -194,31 +229,61 @@ const TableList: React.FC = () => {
                 title="商品销售"
                 extra={
                   <Button type="link" block onClick={() => jump('/goods/sales')}>
-                    去查看
+                    去页面查看
                   </Button>
                 }
               >
-                <Statistic
-                  title="现存数量"
-                  value={execute_info?.goods_sales?.exists}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="新增数量"
-                  value={execute_info?.goods_sales?.inserted}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="更新数量"
-                  value={execute_info?.goods_sales?.updated}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
+                <Row>
+                  <Col span={8}>
+                    <Statistic
+                      title="现存数量"
+                      value={execute_info?.goods_sales?.exists}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="新增数量"
+                      value={execute_info?.goods_sales?.inserted}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="更新数量"
+                      value={execute_info?.goods_sales?.updated}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                </Row>
+                <Row style={{ marginTop: '12px' }}>
+                  <Col span={12}>
+                    <Statistic
+                      title="未找到关联商品佣金"
+                      value={10}
+                      precision={2}
+                      valueStyle={{ color: '#cf1322' }}
+                      formatter={formatter}
+                      prefix={<InfoCircleOutlined />}
+                    />
+                  </Col>
+                  <Col span={12} >
+                  <Statistic
+                      title="未找到关联财务分账配置"
+                      value={12}
+                      precision={2}
+                      valueStyle={{ color: '#cf1322' }}
+                      formatter={formatter}
+                      prefix={<InfoCircleOutlined />}
+                    />
+                  </Col>
+                </Row>
               </Card>
             </Col>
           )}
@@ -226,34 +291,42 @@ const TableList: React.FC = () => {
             <Col span={12}>
               <Card
                 bordered={false}
-                title="商品提成"
+                title="商品佣金"
                 extra={
                   <Button type="link" block onClick={() => jump('/goods/commission-management')}>
-                    去查看
+                    去页面查看
                   </Button>
                 }
               >
-                <Statistic
-                  title="现存数量"
-                  value={execute_info?.goods_commission?.exists}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="新增数量"
-                  value={execute_info?.goods_commission?.inserted}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="更新数量"
-                  value={execute_info?.goods_commission?.updated}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
+                <Row>
+                  <Col span={8}>
+                    <Statistic
+                      title="现存数量"
+                      value={execute_info?.goods_commission?.exists}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="新增数量"
+                      value={execute_info?.goods_commission?.inserted}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="更新数量"
+                      value={execute_info?.goods_commission?.updated}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                </Row>
               </Card>
             </Col>
           )}
@@ -264,31 +337,39 @@ const TableList: React.FC = () => {
                 title="账号管理"
                 extra={
                   <Button type="link" block onClick={() => jump('/accounts')}>
-                    去查看
+                    去页面查看
                   </Button>
                 }
               >
-                <Statistic
-                  title="现存数量"
-                  value={execute_info?.account?.exists}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="新增数量"
-                  value={execute_info?.account?.inserted}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="更新数量"
-                  value={execute_info?.account?.updated}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
+                <Row>
+                  <Col span={8}>
+                    <Statistic
+                      title="现存数量"
+                      value={execute_info?.account?.exists}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="新增数量"
+                      value={execute_info?.account?.inserted}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="更新数量"
+                      value={execute_info?.account?.updated}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                </Row>
               </Card>
             </Col>
           )}
@@ -299,31 +380,39 @@ const TableList: React.FC = () => {
                 title="联创公司"
                 extra={
                   <Button type="link" block onClick={() => jump('/cooperator-list')}>
-                    去查看
+                    去页面查看
                   </Button>
                 }
               >
-                <Statistic
-                  title="现存数量"
-                  value={execute_info?.cooperator?.exists}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="新增数量"
-                  value={execute_info?.cooperator?.inserted}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
-                <Statistic
-                  title="更新数量"
-                  value={execute_info?.cooperator?.updated}
-                  precision={2}
-                  valueStyle={{ color: '#3f8600' }}
-                  formatter={formatter}
-                />
+                <Row>
+                  <Col span={8}>
+                    <Statistic
+                      title="现存数量"
+                      value={execute_info?.cooperator?.exists}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="新增数量"
+                      value={execute_info?.cooperator?.inserted}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                  <Col span={8}>
+                    <Statistic
+                      title="更新数量"
+                      value={execute_info?.cooperator?.updated}
+                      precision={2}
+                      valueStyle={{ color: '#3f8600' }}
+                      formatter={formatter}
+                    />
+                  </Col>
+                </Row>
               </Card>
             </Col>
           )}

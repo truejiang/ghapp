@@ -112,8 +112,8 @@ export default {
   'pages.accounts.createForm.title': '新建',
   'pages.accounts.updateForm.title': '编辑',
 
-  // 商品提成
-  'pages.goods.title': '商品提成',
+  // 商品佣金
+  'pages.goods.title': '商品佣金',
   'pages.goods.add': '新增',
   'pages.goods.shop': '商铺名称',
   'pages.goods.goods_name': '商品名称',
@@ -139,7 +139,7 @@ export default {
   'pages.goods.updateForm.title': '编辑',
 
   // 财务管理
-  'pages.finances.title': '分账管理',
+  'pages.finances.title': '分账配置',
   'pages.finances.add': '新增',
   'pages.finances.cooperator_id': '联创公司',
   'pages.finances.account_id': '账号名称',

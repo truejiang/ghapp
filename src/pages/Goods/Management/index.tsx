@@ -152,12 +152,14 @@ const TableList: React.FC = () => {
       title: "固定佣金",
       dataIndex: 'commission_fixed',
       valueType: 'text',
+      width: 100,
       hideInSearch: true
     },
     {
       title: "全佣比例(%)",
       dataIndex: 'commission_rate',
       valueType: "percent",
+      width: 130,
       render: (dom, entity) => {
         return <>{typeof entity.commission_rate === 'number' ? (entity.commission_rate * 100).toFixed(2) : '-'}</>;
       },
@@ -167,6 +169,7 @@ const TableList: React.FC = () => {
       title: "线上佣金比例(%)",
       dataIndex: 'online_commission_rate',
       valueType: 'text',
+      width: 130,
       render: (dom, entity) => {
         return <>{typeof entity.online_commission_rate === 'number' ? (entity.online_commission_rate * 100).toFixed(2) : '-'}</>;
       },
@@ -176,6 +179,7 @@ const TableList: React.FC = () => {
       title: "线下佣金比例(%)",
       dataIndex: 'offline_commission_rate',
       valueType: 'text',
+      width: 130,
       render: (dom, entity) => {
         return <>{typeof entity.offline_commission_rate === 'number' ? (entity.offline_commission_rate * 100).toFixed(2) : '-'}</>;
       },
@@ -185,6 +189,8 @@ const TableList: React.FC = () => {
       title: <FormattedMessage id="pages.goods.option" defaultMessage="操作" />,
       dataIndex: 'option',
       valueType: 'option',
+      width: 180,
+      fixed: 'right',
       render: (_, record) => [
         <a
           key="config"

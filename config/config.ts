@@ -152,5 +152,7 @@ export default defineConfig({
     strategy: 'normal',
   },
   requestRecord: {},
-  esbuildMinifyIIFE: true
+  esbuildMinifyIIFE: true,
+  // 缓存？
+  keepalive: ['/data-batch-import', '/report-management']
 });

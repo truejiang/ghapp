@@ -216,7 +216,7 @@ declare namespace API {
     }
   }
 
-  // 商品提成
+  // 商品佣金
   type GoodsListItem = {
     id?: number;
     goods_id?: number;
@@ -231,7 +231,7 @@ declare namespace API {
     modified_timestamp?: string;
   }
 
-  // 商品提成列表
+  // 商品佣金列表
   type GoodsList = {
     page_data: {
       items: {
@@ -277,7 +277,7 @@ declare namespace API {
     }
   }
 
-  // 分账管理
+  // 分账配置
   type FinancesListItem = {
     id?: number;
     finances_id?: number;
@@ -294,7 +294,7 @@ declare namespace API {
     modified_timestamp?: string;
   }
 
-  // 分账管理列表
+  // 分账配置列表
   type FinancesList = {
     page_data: {
       items: {

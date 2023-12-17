@@ -6,12 +6,13 @@ export async function getOptionsOrderStatusCheck() {
     method: 'GET'
   });
 
-  const { options } = (await res)
-
+  const { options, info } = (await res)
+  console.log("🚀 ~ file: reportManagment.ts:10 ~ getOptionsOrderStatusCheck ~ options:", options)
   return {
     data: options.map(_ => ({
       label: _,
-      value: _
+      value: _,
+      description: info[_]?.description
     }))
   }
 }
