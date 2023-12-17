@@ -1,9 +1,9 @@
 import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { download } from '@/utils/dowload';
-import { FileExcelOutlined, UploadOutlined } from '@ant-design/icons';
+import { CheckCircleOutlined, ExclamationCircleOutlined, FileExcelOutlined, UploadOutlined } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
-import { history, useRequest } from '@umijs/max';
+import { history, request, useRequest } from '@umijs/max';
 import {
   Button,
   Card,
@@ -20,10 +20,10 @@ import {
   Statistic,
   Upload,
 } from 'antd';
+import { RcFile } from 'antd/es/upload/interface';
 import { isEmpty } from 'lodash';
 import React, { useState } from 'react';
 import CountUp from 'react-countup';
-
 
 const TableList: React.FC = () => {
   const [create_related_data, set_create_related_data] = useState(true);
@@ -40,18 +40,70 @@ const TableList: React.FC = () => {
   const [uploading, setUploading] = useState(false);
 
   const { run: runDataBatchImport } = useRequest(dataBatchImport, {
-    manual: true
-  })
+    manual: true,
+  });
   // useRequest()
 
   const handleUpload = () => {
     setUploading(true);
-    runDataBatchImport({
-      data_source,
-      file_list
-    }).then(() => {
-        set_file_list([]);
-        message.success('upload successfully.');
+
+    const formData = new FormData();
+    file_list.forEach((file) => {
+      formData.append('file_list', file as RcFile);
+    });
+
+    request('/api/v1/tools/upload/excel_list', {
+      method: 'POST',
+      data: formData,
+      params: {
+        data_source,
+      }
+    })
+      .then((res = {}) => {
+        const {success, message, failure = []} = res
+        console.log(success)
+        if(!isEmpty(success) && Array.isArray(success)) {
+          notification.open({
+            message: '更新成功',
+            description: <div dangerouslySetInnerHTML={{__html: `${message}<br> 本次共更新${success.length}个文件，具体内容如下`}}></div>,
+            key: 'error',
+            onClose: async () => null,
+            icon: <CheckCircleOutlined />,
+            placement: 'top'
+          })
+          // const { records = {} } = response;
+          // const { execute_info } = records;
+
+          let summary = {};
+
+          success.forEach(item => {
+            let execute_info = item.records.execute_info;
+            for (let key in execute_info) {
+              if (!summary[key]) {
+                summary[key] = {...execute_info[key]};
+              } else {
+                summary[key].inserted += execute_info[key].inserted;
+                summary[key].updated += execute_info[key].updated;
+                summary[key].exists += execute_info[key].exists;
+              }
+            }
+          });
+
+
+          setexecute_info(summary);
+
+          set_file_list([]);
+        } else {
+          notification.open({
+            message: '错误提示',
+            description: <div dangerouslySetInnerHTML={{__html: `${message}<br>失败的文件如下<br><div style="color: #aa0365">${failure.reduce((curr, prev) => curr += (prev.filename + '<br>'), '')}</div>`}}></div>,
+            key: 'error',
+            onClose: async () => null,
+            icon: <ExclamationCircleOutlined color='#aa0365'/>,
+            placement: 'top'
+          })
+        }
+        // message.success('upload successfully.');
       })
       .catch(() => {
         message.error('upload failed.');
@@ -112,18 +164,16 @@ const TableList: React.FC = () => {
           <Upload
             multiple
             beforeUpload={(file) => {
-              set_file_list([...file_list, file])
-              return false
+              set_file_list([...file_list, file]);
+              return false;
             }}
             fileList={file_list}
-            onRemove={
-              (file) => {
-                const index = file_list.indexOf(file);
-                const newFileList = file_list.slice();
-                newFileList.splice(index, 1);
-                set_file_list(newFileList);
-              }
-            }
+            onRemove={(file) => {
+              const index = file_list.indexOf(file);
+              const newFileList = file_list.slice();
+              newFileList.splice(index, 1);
+              set_file_list(newFileList);
+            }}
           >
             <Button icon={<UploadOutlined />}>点击选择文件</Button>
           </Upload>

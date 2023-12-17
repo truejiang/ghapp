@@ -57,6 +57,20 @@ function getTomon() {
   return year + '-' + month + '-' + day;
 }
 
+function getNextDay(dateString: string): string {
+  const date = new Date(dateString);
+  date.setDate(date.getDate() + 1);
+  const year = date.getFullYear();
+  let month = (date.getMonth() + 1).toString();
+  let day = date.getDate().toString();
+
+  // 如果月份和日期小于10，前面补0
+  month = month.length < 2 ? '0' + month : month;
+  day = day.length < 2 ? '0' + day : day;
+
+  return `${year}-${month}-${day}`;
+}
+
 const filterOption = (input: string, option?: { label: string; value: string }) =>
   (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
@@ -124,6 +138,16 @@ const TableList: React.FC = () => {
               />
             </>
           )}
+          {
+            reportType === '商品销售日报' && 
+            <DatePicker onChange={(date, dateString) => {
+              // console.log({date, dateString})
+              const start_date = dateString
+              const end_date = getNextDay(dateString)
+              // const [start_date, end_date] = dateString;
+              reportDate.current = { start_date, end_date };
+            }} />
+          }
           <Button
             icon={<DownloadOutlined />}
             type="primary"
@@ -142,16 +166,18 @@ const TableList: React.FC = () => {
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else if (reportType === '商品销售日报') {
+                const { start_date, end_date } = reportDate.current;
+                if (!start_date || !end_date) return message.warning('未选择时间');
                 downloadPost(
                   '/api/v1/tools/download/reports',
                   {
-                    start_date: getTody(),
-                    end_date: getTomon(),
+                    start_date,
+                    end_date,
                     order_status_check,
                     report_name: reportType,
                     cooperator_id_check
                   },
-                  `${reportType} ${getTody()}`,
+                  `${reportType} ${start_date}`,
                   { 'Content-Type': 'application/json', Authorization: getToken() },
                 );
               } else {
