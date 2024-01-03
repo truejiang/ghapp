@@ -1,14 +1,13 @@
-import { getAccounts } from '@/services/ant-design-pro/accounts';
 import { getCooperators } from '@/services/ant-design-pro/cooperator';
+import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { getGoodsOrderStatus } from '@/services/ant-design-pro/goods-sales';
 import { getOptionsOrderStatusCheck } from '@/services/ant-design-pro/reportManagment';
 import { downloadPost } from '@/utils/dowload';
 import { getToken } from '@/utils/indexs';
 import { DownloadOutlined } from '@ant-design/icons';
-import type { ActionType } from '@ant-design/pro-components';
 import { CheckCard, PageContainer } from '@ant-design/pro-components';
 import { useRequest } from '@umijs/max';
-import { Button, DatePicker, Flex, message, Select, Space, Tour } from 'antd';
+import { Button, DatePicker, Flex, Form, message, Select, Space, Tour } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 
@@ -36,19 +35,17 @@ const TableList: React.FC = () => {
    * */
   const [reportType, setReportType] = useState<string>('');
 
-  const actionRef = useRef<ActionType>();
-
   const { data: cooperatorList } = useRequest(() => getCooperators({ current: 1, pageSize: 9999 }));
-  const { data: accountList } = useRequest(() => getAccounts({ current: 1, pageSize: 9999 }));
 
-  const restFormRef = useRef(null);
+  const [form] = Form.useForm();
 
   const reportDate = useRef({ start_date: '', end_date: '' });
 
   const { data } = useRequest(() => getGoodsOrderStatus());
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
-  const [order_status_check, set_order_status_check] = useState('');
+  const [loading, setLoading] = useState<boolean>(false);
   const [cooperator_id_check, set_cooperator_id_check] = useState([]);
+  const { data: templateOptions } = useRequest(() => getTemplateOptions());
 
   const ref1 = useRef(null);
   const ref2 = useRef(null);
@@ -71,7 +68,7 @@ const TableList: React.FC = () => {
       target: () => ref3.current,
     },
   ];
-  
+
   return (
     <PageContainer>
       <Tour
@@ -84,82 +81,117 @@ const TableList: React.FC = () => {
           </span>
         )}
       />
-      <Flex justify="flex-end" align="center" style={{ marginBottom: '12px' }}>
+      <div ref={ref2}>
+        <Form layout="inline" form={form}>
+          <Flex style={{ marginBottom: '12px' }}>
+            <Space>
+              <Form.Item label="平台来源" name="data_source">
+                <Select
+                  mode="multiple"
+                  placeholder="请求选择平台"
+                  style={{ width: 265 }}
+                  options={templateOptions?.filter((_) => _.label?.startsWith('商品订单'))}
+                  maxTagCount={1}
+                />
+              </Form.Item>
+              <Form.Item label="订单状态" name="order_status_check">
+                <Select
+                  mode="multiple"
+                  placeholder="请选择订单状态"
+                  style={{ width: 265 }}
+                  options={data}
+                  maxTagCount={1}
+                />
+              </Form.Item>
+              <Form.Item label="联创公司" name="cooperator_id_check">
+                <Select
+                  mode="multiple"
+                  placeholder="请选择联创公司"
+                  style={{ width: 265 }}
+                  // onChange={set_cooperator_id_check}
+                  options={cooperatorList?.map((_) => ({
+                    label: _.name,
+                    value: _.id,
+                  }))}
+                  filterOption={filterOption}
+                  maxTagCount={1}
+                />
+              </Form.Item>
+            </Space>
+          </Flex>
+          <Flex style={{ marginBottom: '12px' }}>
+            <Space>
+              <Form.Item label="时间范围" name="dateRage">
+                <DatePicker.RangePicker
+                  onChange={(dates: [any, any], dateStrings: [string, string]) => {
+                    const [start_date, end_date] = dateStrings;
+                    reportDate.current = { start_date, end_date };
+                  }}
+                />
+              </Form.Item>
+            </Space>
+          </Flex>
+        </Form>
+      </div>
+      <Flex align="center" style={{ marginBottom: '12px' }}>
         <Space>
-          <div ref={ref2}>
-            <Select
-              mode="multiple"
-              placeholder="请选择订单状态"
-              style={{ width: 200, marginRight: '12px' }}
-              onChange={set_order_status_check}
-              options={data}
-              maxTagCount={1}
-            />
-            <Select
-              mode="multiple"
-              placeholder="请选择联创公司"
-              style={{ width: 200, marginRight: '12px' }}
-              onChange={set_cooperator_id_check}
-              options={cooperatorList?.map(_ => ({
-                label: _.name,
-                value: _.id
-              }))}
-              filterOption={filterOption}
-              maxTagCount={1}
-            />
-            
-            <DatePicker.RangePicker
-              onChange={(dates: [any, any], dateStrings: [string, string]) => {
-                const [start_date, end_date] = dateStrings;
-                reportDate.current = { start_date, end_date };
-              }}
-            />
-          </div>
           <Button
+            loading={loading}
             ref={ref3}
             icon={<DownloadOutlined />}
             type="primary"
-            onClick={() => {
+            onClick={async () => {
+              const formValues = form.getFieldsValue();
+              const { order_status_check, data_source } = formValues;
+              const { start_date, end_date } = reportDate.current;
+              if (!start_date || !end_date) return message.warning('时间范围未选择');
               // if(reportDate.)
               if (isEmpty(order_status_check) || !order_status_check)
                 return message.warning('订单状态未选择');
-              // if(reportType === '联创分账报告' && (isEmpty(cooperator_id_check) || !order_status_check)) return message.warning('未选择联创公司')
+              if(!reportType) return message.warning('请选择一个报告类型');
+              setLoading(true);
               if (reportType === '联创分账报告') {
-                const { start_date, end_date } = reportDate.current;
-                if (!start_date || !end_date) return message.warning('时间范围未选择');
-                downloadPost(
-                  '/api/v1/tools/download/reports',
-                  { ...reportDate.current, order_status_check, cooperator_id_check,report_name: reportType },
-                  `${reportType} ${start_date}-${end_date}`,
-                  { 'Content-Type': 'application/json', Authorization: getToken() },
-                );
+                try {
+                  await downloadPost(
+                    '/api/v1/tools/download/reports',
+                    {
+                      ...reportDate.current,
+                      data_source,
+                      order_status_check,
+                      cooperator_id_check,
+                      report_name: reportType,
+                    },
+                    `${reportType} ${start_date}-${end_date}`,
+                    { 'Content-Type': 'application/json', Authorization: getToken() },
+                  );
+                } catch (error) {
+                } finally {
+                  setLoading(false);
+                }
               } else if (reportType === '商品销售日报') {
-                const { start_date, end_date } = reportDate.current;
-                if (!start_date || !end_date) return message.warning('未选择时间');
-                downloadPost(
-                  '/api/v1/tools/download/reports',
-                  {
-                    start_date,
-                    end_date,
-                    order_status_check,
-                    report_name: reportType,
-                    cooperator_id_check
-                  },
-                  `${reportType} ${start_date}-${end_date}`,
-                  { 'Content-Type': 'application/json', Authorization: getToken() },
-                );
-              } else {
-                return message.warning('请选择一个报告类型');
+                try {
+                  await downloadPost(
+                    '/api/v1/tools/download/reports',
+                    {
+                      start_date,
+                      end_date,
+                      data_source,
+                      order_status_check,
+                      report_name: reportType,
+                      cooperator_id_check,
+                    },
+                    `${reportType} ${start_date}-${end_date}`,
+                    { 'Content-Type': 'application/json', Authorization: getToken() },
+                  );
+                } catch (error) {} finally {
+                  setLoading(false);
+                }
               }
             }}
           >
             下载
           </Button>
-          <Button
-            type="primary"
-            onClick={() => setOpen(true)}
-            style={{marginLeft: 'auto'}}
-          >
+          <Button type="primary" onClick={() => setOpen(true)}>
             操作指引
           </Button>
         </Space>
@@ -169,13 +201,19 @@ const TableList: React.FC = () => {
           <CheckCard.Group
             onChange={(value) => {
               if (typeof value === 'string') {
+                if (value === '联创分账报告') {
+                  form.setFieldValue('data_source', ['商品订单-供应链']);
+                } else if (value === '商品销售日报') {
+                  form.setFieldValue('data_source', ['商品订单-抖老板', '商品订单-巨量百应']);
+                }
                 setReportType(value);
+              } else {
+                form.setFieldValue('data_source', []);
               }
             }}
-            
           >
             {options?.map((_) => (
-              <CheckCard title={_.label} value={_.value} description={_.description}/>
+              <CheckCard title={_.label} value={_.value} description={_.description} />
             ))}
           </CheckCard.Group>
         </Space>
