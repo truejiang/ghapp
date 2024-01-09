@@ -156,19 +156,17 @@ const TableList: React.FC = () => {
         } else {
           notification.open({
             message: '错误提示',
+            duration: 120,
             description: (
               <div
                 dangerouslySetInnerHTML={{
-                  __html: `${message}<br>失败的文件如下<br><div style="color: #aa0365">${failure.reduce(
-                    (curr, prev) => (curr += prev.filename + '<br>'),
-                    '',
-                  )}</div>`,
+                  __html: message?.replaceAll('\n', '<br>'),
                 }}
               ></div>
             ),
             key: 'error',
             onClose: async () => null,
-            icon: <ExclamationCircleOutlined color="#aa0365" />,
+            icon: <ExclamationCircleOutlined color="red" />,
             placement: 'top',
           });
         }

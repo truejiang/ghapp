@@ -204,7 +204,7 @@ const TableList: React.FC = () => {
                 if (value === '联创分账报告') {
                   form.setFieldValue('data_source', ['商品订单-供应链']);
                 } else if (value === '商品销售日报') {
-                  form.setFieldValue('data_source', ['商品订单-抖老板', '商品订单-巨量百应']);
+                  form.setFieldValue('data_source', ['商品订单-抖老板', '商品订单-巨量百应', '商品订单-供应链']);
                 }
                 setReportType(value);
               } else {
