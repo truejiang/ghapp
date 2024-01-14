@@ -87,11 +87,14 @@ const TableList: React.FC = () => {
             <Space>
               <Form.Item label="平台来源" name="data_source">
                 <Select
-                  mode="multiple"
                   placeholder="请求选择平台"
                   style={{ width: 265 }}
+                  onChange={() => {
+                    form.setFieldValue('order_status_check', []);
+                    form.setFieldValue('cooperator_id_check', []);
+                    form.setFieldValue('dateRage', []);
+                  }}
                   options={templateOptions?.filter((_) => _.label?.startsWith('商品订单'))}
-                  maxTagCount={1}
                 />
               </Form.Item>
               <Form.Item label="订单状态" name="order_status_check">
@@ -142,7 +145,7 @@ const TableList: React.FC = () => {
             type="primary"
             onClick={async () => {
               const formValues = form.getFieldsValue();
-              const { order_status_check, data_source } = formValues;
+              const { order_status_check, data_source, cooperator_id_check } = formValues;
               const { start_date, end_date } = reportDate.current;
               if (!start_date || !end_date) return message.warning('时间范围未选择');
               // if(reportDate.)
@@ -202,14 +205,19 @@ const TableList: React.FC = () => {
             onChange={(value) => {
               if (typeof value === 'string') {
                 if (value === '联创分账报告') {
-                  form.setFieldValue('data_source', ['商品订单-供应链']);
+                  form.setFieldValue('data_source', '商品订单-供应链');
+                  
                 } else if (value === '商品销售日报') {
-                  form.setFieldValue('data_source', ['商品订单-抖老板', '商品订单-巨量百应', '商品订单-供应链']);
+                  form.setFieldValue('data_source', '商品订单-抖老板');
                 }
+                
                 setReportType(value);
               } else {
                 form.setFieldValue('data_source', []);
               }
+              form.setFieldValue('order_status_check', []);
+              form.setFieldValue('cooperator_id_check', []);
+              form.setFieldValue('dateRage', []);
             }}
           >
             {options?.map((_) => (
