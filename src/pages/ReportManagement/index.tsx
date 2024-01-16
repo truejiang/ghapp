@@ -106,7 +106,7 @@ const TableList: React.FC = () => {
                   maxTagCount={1}
                 />
               </Form.Item>
-              <Form.Item label="联创公司" name="cooperator_id_check">
+              {/* <Form.Item label="联创公司" name="cooperator_id_check">
                 <Select
                   mode="multiple"
                   placeholder="请选择联创公司"
@@ -119,7 +119,7 @@ const TableList: React.FC = () => {
                   filterOption={filterOption}
                   maxTagCount={1}
                 />
-              </Form.Item>
+              </Form.Item> */}
             </Space>
           </Flex>
           <Flex style={{ marginBottom: '12px' }}>
