@@ -36,7 +36,7 @@ export default {
   },
   pre: {
     '/api/': {
-      target: 'http://101.32.35.38:8088',
+      target: 'http://101.32.35.38:8087',
       changeOrigin: true,
       pathRewrite: { '^': '' },
     },

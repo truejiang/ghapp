@@ -163,7 +163,7 @@ const TableList: React.FC = () => {
       dataIndex: 'account_id_check',
       valueType: 'select',
       request: async () => {
-        const res = await getAccounts({});
+        const res = await getAccounts({ current: 1, pageSize: 9999 });
         return (
           uniqBy(res.data, 'account_id')?.map((_) => ({
             label: _.account_id,
@@ -173,8 +173,13 @@ const TableList: React.FC = () => {
       },
       fieldProps: {
         mode: 'multiple',
-        showSearch: true,
-        maxTagCount: 'responsive'
+        maxTagCount: 'responsive',
+        filterOption: (inputValue, option = {}) => {
+          console.log("🚀 ~ inputValue:", inputValue,option)
+          const {label = '', value = ''} = option
+          if(value.includes(inputValue.trim()) || label.includes(inputValue.trim())) return true
+          return false
+        }
       },
       hideInTable: true
     },
@@ -217,6 +222,11 @@ const TableList: React.FC = () => {
       dataIndex: 'fixed_charges',
       valueType: 'text',
       hideInSearch: true,
+    },
+    {
+      title: "IP公司",
+      dataIndex: 'ip_company',
+      valueType: 'text',
     },
     {
       title: <FormattedMessage id="pages.finances.remarks" defaultMessage="固定分红" />,

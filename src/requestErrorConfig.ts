@@ -65,6 +65,7 @@ export const errorConfig: RequestConfig = {
               redirect: pathname + search,
             }),
           });
+          return 
         }
       }
       if (opts?.skipErrorHandler) throw error;

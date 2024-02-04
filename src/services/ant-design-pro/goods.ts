@@ -121,3 +121,50 @@ export async function getTemplateOptions() {
   }
 }
 
+/** 获取供应链列表 GET /api/v1/goods/shop/ */
+export async function getGoodShopList(
+  params: {
+    // query
+    /** 当前的页码 */
+    current?: number;
+    /** 页面的容量 */
+    pageSize?: number;
+  },
+  options?: { [key: string]: any },
+) {
+  const { current: page_num, pageSize: page_size, ...query } = params;
+  const res = request<API.ShopListItem>('/api/v1/goods/shop/', {
+    method: 'GET',
+    params: {
+      page_num: params.current,
+      page_size: params.pageSize,
+    },
+    ...(options || {}),
+  });
+
+  const { items, total_items } = (await res).page_data.items;
+
+  return {
+    data: items,
+    total: total_items,
+  };
+}
+
+/** 新建供应链 POST /api/v1/goods/shop */
+export async function addGoodShop(data: API.CreateShopItem, options?: { [key: string]: any }) {
+  return request<API.ShopListItem>('/api/v1/goods/shop/', {
+    method: 'POST',
+    data,
+    ...(options || {}),
+  });
+}
+
+/** 编辑供应链 PUT /api/v1/goods/shop */
+export async function updateGoodsShop(params: API.UpdateShopListItem, options?: { [key: string]: any }) {
+  const { id, ...data } = params
+  return request<API.ShopListItem>('/api/v1/goods/shop/' + id, {
+    method: 'PUT',
+    data,
+    ...(options || {}),
+  });
+}

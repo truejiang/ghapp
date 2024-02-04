@@ -1,7 +1,7 @@
 // @ts-ignore
 /* eslint-disable */
 import { request } from '@umijs/max';
-import { isEmpty } from 'lodash'
+import { isEmpty } from 'lodash';
 
 /** 获取财务列表 GET /api/v1/finances/ */
 export async function getFinances(
@@ -14,26 +14,26 @@ export async function getFinances(
   },
   options?: { [key: string]: any },
 ) {
-  const { current: page_num, pageSize: page_size, ...query } = params
+  const { current: page_num, pageSize: page_size, ...query } = params;
 
-  if(isEmpty(query)) {
+  if (isEmpty(query)) {
     const res = request<API.FinancesList>('/api/v1/finances/', {
       method: 'GET',
       params: {
         page_num: params.current,
-        page_size: params.pageSize
+        page_size: params.pageSize,
       },
       ...(options || {}),
     });
-  
-    const { items, total_items} = (await res).page_data.items
-  
-    return { 
+
+    const { items, total_items } = (await res).page_data.items;
+
+    return {
       data: items,
-      total: total_items
-    }
+      total: total_items,
+    };
   } else {
-    const { cooperator_id: cooperator_name, account_id: account_name,..._} = query
+    const { cooperator_id: cooperator_name, account_id: account_name, ..._ } = query;
 
     const res = request<API.FinancesList>('/api/v1/finances/fin_split/filter', {
       method: 'POST',
@@ -42,43 +42,41 @@ export async function getFinances(
         account_name,
         ..._,
         page_num: params.current,
-        page_size: params.pageSize
+        page_size: params.pageSize,
       },
       ...(options || {}),
     });
-  
-    const { items, total_items} = (await res).page_data.items
-  
-    return { 
+
+    const { items, total_items } = (await res).page_data.items;
+
+    return {
       data: items,
-      total: total_items
-    }
+      total: total_items,
+    };
   }
-  
 }
 
 /** 根据id获取财务详情 GET /api/v1/finances/ */
-export async function getFinance(
-  finance_id: string,
-  options?: { [key: string]: any },
-) {
-
+export async function getFinance(finance_id: string, options?: { [key: string]: any }) {
   const res = request<API.FinancesList>('/api/v1/finances/' + finance_id, {
     method: 'GET',
     ...(options || {}),
   });
 
-  const { items, total_items} = (await res).page_data.items
+  const { items, total_items } = (await res).page_data.items;
 
-  return { 
+  return {
     data: items,
-    total: total_items
-  }
+    total: total_items,
+  };
 }
 
 /** 编辑财务 PUT /api/v1/finances/ */
-export async function updateFinance(params: API.FinancesListItem, options?: { [key: string]: any }) {
-  const {id, ...data} = params
+export async function updateFinance(
+  params: API.FinancesListItem,
+  options?: { [key: string]: any },
+) {
+  const { id, ...data } = params;
   return request<API.FinancesListItem>('/api/v1/finances/' + id, {
     method: 'PUT',
     data,
@@ -104,8 +102,11 @@ export async function removeFinance(id: number, options?: { [key: string]: any }
 }
 
 // 下载
-export async function downloadReport(params: API.FinancesReportQuery, options?: { [key: string]: any }) {
-  return request<API.FinancesReportQuery>('/api/v1/finances/report/download/', {
+export async function downloadReport(
+  params: API.FinancesReportQuery,
+  options?: { [key: string]: any },
+) {
+  return request<API.FinancesReportQuery>('/api/v1/tools/download/reports/', {
     method: 'POST',
     params,
     ...(options || {}),
@@ -113,15 +114,47 @@ export async function downloadReport(params: API.FinancesReportQuery, options?: 
 }
 
 export async function getSalesFilterOrderStatus() {
-  const res = request<API.FinancesReportQuery>('/api/v1/goods/sales/filter/options/order_status_check', {
-    method: 'GET'
+  const res = request<API.FinancesReportQuery>(
+    '/api/v1/tools/options/order_status_check',
+    {
+      method: 'GET',
+    },
+  );
+
+  const { options = [] } = await res;
+  return {
+    data: options.map((_) => ({
+      label: _,
+      value: _,
+    })),
+  };
+}
+
+/** 获取IP费用 GET /api/v1/finances/ip_pay */
+export async function getIpPay(
+  params: {
+    // query
+    /** 当前的页码 */
+    current?: number;
+    /** 页面的容量 */
+    pageSize?: number;
+  },
+  options?: { [key: string]: any },
+) {
+  const { current: page_num, pageSize: page_size, ...query } = params;
+  const res = request<API.IpPayListItem>('/api/v1/finances/ip_pay/', {
+    method: 'GET',
+    params: {
+      page_num: params.current,
+      page_size: params.pageSize,
+    },
+    ...(options || {}),
   });
 
-  const { options = []} = (await res)
+  const { items, total_items } = (await res).page_data.items;
+
   return {
-    data: options.map(_ => ({
-      label: _,
-      value: _
-    }))
-  }
+    data: items,
+    total: total_items,
+  };
 }

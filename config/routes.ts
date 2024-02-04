@@ -19,13 +19,35 @@ export default [
     name: '数据批导',
     icon: 'ImportOutlined',
     path: '/data-batch-import',
-    component: './DataBatchImport',
+    routes: [
+      {
+        name: '数据导入',
+        path: '/data-batch-import/index',
+        component: './DataBatchImport',
+      },
+      {
+        name: '导入记录',
+        path: '/data-batch-import/record',
+        component: './DataBatchImport/History',
+      },
+    ],
   },
   {
     name: '报告管理',
     icon: 'table',
     path: '/report-management',
-    component: './ReportManagement',
+    routes: [
+      {
+        name: '报告下载',
+        path: '/report-management/index',
+        component: './ReportManagement',
+      },
+      {
+        name: '下载记录',
+        path: '/report-management/record',
+        component: './ReportManagement/History',
+      }
+    ]
   },
   // {
   //   name: '数据操作Beta',
@@ -84,10 +106,14 @@ export default [
       },
       {
         path: '/goods/sales',
-        name: '商品销售',
+        name: '商品订单',
         component: './Goods/Sales',
       },
-
+      {
+        path: '/goods/shop',
+        name: '供应链',
+        component: './Goods/Shop',
+      },
     ],
   },
   // {
@@ -110,26 +136,26 @@ export default [
         name: '分账配置',
         component: './Finances',
       },
-      // {
-      //   path: '/finances/report',
-      //   name: '分账报告',
-      //   component: './Finances/Split',
-      // },
-
+      {
+        name: '联创公司',
+        icon: 'ShopOutlined',
+        path: '/finances/cooperator-list',
+        component: './CooperatorList',
+      },
+      {
+        name: '平台账号',
+        icon: 'ContactsOutlined',
+        path: '/finances/accounts',
+        component: './Accounts',
+      },
+      {
+        path: '/finances/ip_pay',
+        name: 'IP费用',
+        component: './Finances/IpPay',
+      },
     ],
   },
-  {
-    name: '联创管理',
-    icon: 'ShopOutlined',
-    path: '/cooperator-list',
-    component: './CooperatorList',
-  },
-  {
-    name: '账号管理',
-    icon: 'ContactsOutlined',
-    path: '/accounts',
-    component: './Accounts',
-  },
+  
   {
     name: '用户管理',
     icon: 'team',

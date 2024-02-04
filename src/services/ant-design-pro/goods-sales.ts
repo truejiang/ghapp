@@ -62,9 +62,10 @@ export async function getGoodsSales(
 
 
 /** 获取状态字典 */
-export async function getGoodsOrderStatus() {
-  const res = request('/api/v1/goods/sales/filter/options/order_status_check', {
-    method: 'GET'
+export async function getGoodsOrderStatus(params?: { data_source?: string}) {
+  const res = request('/api/v1/tools/options/order_status_check', {
+    method: 'GET',
+    params
   });
 
   const { options } = (await res)

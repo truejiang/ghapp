@@ -1,42 +1,63 @@
-import { dataBatchImport } from '@/services/ant-design-pro/dataBatchImport';
+import { dataBatchImport, getDataImportHistory } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
+import { getReportHistoryById } from '@/services/ant-design-pro/reportManagment';
 import { download, downloadFile } from '@/utils/dowload';
 import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
-  InfoCircleOutlined,
   UploadOutlined,
+  VerticalAlignBottomOutlined,
 } from '@ant-design/icons';
 import { PageContainer } from '@ant-design/pro-components';
 import { history, request, useRequest } from '@umijs/max';
 import {
   Button,
-  Card,
-  Col,
+  Collapse,
   Divider,
-  Empty,
   Flex,
   FloatButton,
   message,
   notification,
-  Row,
   Select,
   Space,
   Spin,
-  Statistic,
+  Table,
+  TableColumnsType,
+  Tooltip,
   Tour,
   Upload,
 } from 'antd';
 import { RcFile } from 'antd/es/upload/interface';
+import { TourProps } from 'antd/lib/tour/interface';
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 import CountUp from 'react-countup';
-import helpPng from './help.png'
-import { TourProps } from 'antd/lib/tour/interface';
+import helpPng from './help.png';
+
+type MyArrayElement = {
+  [key: string]: any;
+  extra: Array<Record<string, any>>;
+};
+
+type ResultElement = Record<string, any>;
+
+export function flattenArray(arr: MyArrayElement[]): ResultElement[] {
+  return arr.reduce<ResultElement[]>((result, item) => {
+    let { extra = [{}], ..._ } = item;
+    if (extra.length === 0) extra.push({});
+    const _extra = extra.map((extraItem) => ({
+      ..._,
+      ...extraItem,
+    }));
+    return [...result, ..._extra];
+  }, []);
+}
+
+export function checkErrorData(arr: MyArrayElement[]): boolean {
+  return arr.some((_) => _?.extra?.length > 0);
+}
 
 const TableList: React.FC = () => {
-  const [create_related_data, set_create_related_data] = useState(true);
-
   const [open, setOpen] = useState<boolean>(false);
   const ref1 = useRef<HTMLButtonElement>(null);
   const ref2 = useRef<HTMLButtonElement>(null);
@@ -62,14 +83,10 @@ const TableList: React.FC = () => {
     },
     {
       title: '第四步：查看结果',
-      description: '上传成功后下方卡片会更新不同模块的跟新数据，异常未关联数据可点击下载模版修改后重新上传更新。详细信息可参考上图标注。',
+      description:
+        '上传成功后下方卡片会更新不同模块的更新数据，异常未关联数据可点击下载模版修改后重新上传更新。详细信息可参考上图标注。',
       target: () => ref4.current!,
-      cover: (
-        <img
-          alt="tour.png"
-          src={helpPng}
-        />
-      ),
+      cover: <img alt="tour.png" src={helpPng} />,
     },
     {
       title: '提示：模版下载',
@@ -78,15 +95,24 @@ const TableList: React.FC = () => {
     },
   ];
 
-  const [spinning, setSpinning] = React.useState<boolean>(false);
-  const [execute_info, setexecute_info] = React.useState<{
-    [key: string]: {
-      extra: any;
-      exists: number;
-      updated: number;
-      inserted: number;
+  const renderCell = (dataSource: string | any[]) => {
+    return (text, row, index) => {
+      const obj = {
+        children: text,
+        props: {},
+      };
+      // 只比较第一列（name）的数据
+      if (index < dataSource.length - 1 && dataSource[index].name === dataSource[index + 1].name) {
+        obj.props.rowSpan = 2;
+      } else if (index > 0 && dataSource[index].name === dataSource[index - 1].name) {
+        obj.props.rowSpan = 0;
+      }
+      return obj;
     };
-  }>(false);
+  };
+
+  const [spinning, setSpinning] = React.useState<boolean>(false);
+  const [execute_info, setexecute_info] = React.useState<any[]>([]);
 
   const { data } = useRequest(() => getTemplateOptions());
   const [data_source, set_data_source] = useState('');
@@ -135,22 +161,22 @@ const TableList: React.FC = () => {
           // const { records = {} } = response;
           // const { execute_info } = records;
 
-          let summary = {};
+          // let summary = {};
 
-          success.forEach((item) => {
-            let execute_info = item.records.execute_info;
-            for (let key in execute_info) {
-              if (!summary[key]) {
-                summary[key] = { ...execute_info[key] };
-              } else {
-                summary[key].inserted += execute_info[key].inserted;
-                summary[key].updated += execute_info[key].updated;
-                summary[key].exists += execute_info[key].exists;
-              }
-            }
-          });
-
-          setexecute_info(summary);
+          // success.forEach((item) => {
+          //   let execute_info = item.records.execute_info;
+          //   for (let key in execute_info) {
+          //     if (!summary[key]) {
+          //       summary[key] = { ...execute_info[key] };
+          //     } else {
+          //       summary[key].inserted += execute_info[key].inserted;
+          //       summary[key].updated += execute_info[key].updated;
+          //       summary[key].exists += execute_info[key].exists;
+          //     }
+          //   }
+          // });
+          // console.log('summary', summary)
+          setexecute_info(success);
 
           set_file_list([]);
         } else {
@@ -160,7 +186,7 @@ const TableList: React.FC = () => {
             description: (
               <div
                 dangerouslySetInnerHTML={{
-                  __html: message?.replaceAll('\n', '<br>'),
+                  __html: message?.replace(/\\n|\n/g, '<br>'),
                 }}
               ></div>
             ),
@@ -192,7 +218,7 @@ const TableList: React.FC = () => {
       return message.warning('在左上角选择模版的平台吧');
     }
     download(
-      '/api/v1/goods/templates/download',
+      '/api/v1/tools/download/templates',
       {
         template_filename,
       },
@@ -200,6 +226,133 @@ const TableList: React.FC = () => {
       'get',
     );
   };
+
+  const handleDowloadReport = async (execute_id: string) => {
+    // 先获取上传详情
+    const res = await getDataImportHistory(execute_id);
+    const { report_execute_id } = res;
+    if (!report_execute_id)
+      return message.warning('当前报告还未生成，可以稍后在导入历史记录中查看!');
+    const _res = await getReportHistoryById(report_execute_id);
+    const { execute_info } = _res;
+    const { data_info = [] } = JSON.parse(execute_info) || {};
+    downloadFile(data_info[0].download || '');
+  };
+
+  const genExtra = (report_execute_id: string) => (
+    <Button
+      onClick={(event) => {
+        handleDowloadReport(report_execute_id);
+        // If you don't want click extra trigger collapse, you can prevent this:
+        event.stopPropagation();
+      }}
+      type="link"
+      icon={<VerticalAlignBottomOutlined></VerticalAlignBottomOutlined>}
+    >
+      下载报告
+    </Button>
+  );
+
+  const genInfoColumns = (
+    dataSource: Record<string, any>[],
+  ): TableColumnsType<Record<string, any>> => [
+    {
+      dataIndex: 'cn_name',
+      title: '模块名称',
+      render: renderCell(dataSource),
+    },
+    {
+      dataIndex: 'exists',
+      title: '存量数',
+      render: renderCell(dataSource),
+    },
+    {
+      dataIndex: 'inserted',
+      title: '新增数',
+      render: renderCell(dataSource),
+    },
+    {
+      dataIndex: 'update',
+      title: '更新数',
+      render: renderCell(dataSource),
+    },
+    {
+      title: '数据来源',
+      dataIndex: 'data_source',
+    },
+    {
+      title: '需维护数',
+      dataIndex: 'maintainable',
+    },
+    {
+      title: '操作',
+      dataIndex: 'template_file',
+      render(text, record) {
+        if (record.maintainable <= 0 || !record.maintainable) return '';
+        return (
+          <Space>
+            <a type="text" onClick={() => downloadFile(text)}>
+              下载修改
+            </a>
+            <Upload
+              showUploadList={false}
+              multiple
+              beforeUpload={(file, fileList = []) => {
+                const formData = new FormData();
+                if (isEmpty(fileList)) return false;
+                fileList.forEach((file) => {
+                  formData.append('file_list', file as RcFile);
+                });
+
+                request('/api/v1/tools/upload/excel_list', {
+                  method: 'POST',
+                  data: formData,
+                  params: {
+                    data_source: record.data_source,
+                  },
+                })
+                  .then((res = {}) => {
+                    const { success, message, failure = [] } = res;
+                    if (!isEmpty(success) && Array.isArray(success)) {
+                      notification.open({
+                        message: '更新成功',
+                        key: 'error',
+                        onClose: async () => null,
+                        icon: <CheckCircleOutlined />,
+                        placement: 'top',
+                      });
+                    } else {
+                      notification.open({
+                        message: '错误提示',
+                        duration: 120,
+                        description: (
+                          <div
+                            dangerouslySetInnerHTML={{
+                              __html: message?.replace(/\\n|\n/g, '<br>'),
+                            }}
+                          ></div>
+                        ),
+                        key: 'error',
+                        onClose: async () => null,
+                        icon: <ExclamationCircleOutlined color="red" />,
+                        placement: 'top',
+                      });
+                    }
+                    // message.success('upload successfully.');
+                  })
+                  .catch(() => {
+                    message.error('upload failed.');
+                  });
+                return false;
+              }}
+            >
+              <a type="text">更新上传</a>
+            </Upload>
+          </Space>
+        );
+      },
+    },
+  ];
 
   return (
     <PageContainer>
@@ -262,210 +415,39 @@ const TableList: React.FC = () => {
       </Flex>
       <Divider />
       <div ref={ref4}>
-        {isEmpty(execute_info) ? (
-          <Empty
-            style={{ marginTop: '100px' }}
-            description={'暂无更新数据，请在左上角上传后查看！'}
-          ></Empty>
-        ) : (
-          <Row gutter={16}>
-            {execute_info?.goods_sales && (
-              <Col span={12}>
-                <Card
-                  bordered={false}
-                  title="商品销售"
-                  extra={
-                    <Button type="link" block onClick={() => jump('/goods/sales')}>
-                      去页面查看
-                    </Button>
-                  }
-                >
-                  <Row>
-                    <Col span={8}>
-                      <Statistic
-                        title="现存数量"
-                        value={execute_info?.goods_sales?.exists}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
+        <Space direction="vertical" style={{ width: '100%' }}>
+          {execute_info.map((_) => (
+            <Collapse
+              key={_.filename}
+              collapsible="header"
+              expandIconPosition="end"
+              items={[
+                {
+                  key: _.filename,
+                  label: (
+                    <Tooltip color="#ff4d4f" title={checkErrorData(_.records.execute_info) ? '数据需要处理' : ''}>
+                      <span
+                        style={{ color: checkErrorData(_.records.execute_info) ? '#ff4d4f' : '#52c41a' }}
+                      >
+                        {_.filename}
+                      </span>
+                    </Tooltip>
+                  ),
+                  extra: genExtra(_.records.execute_id),
+                  children: (
+                    <Space direction="vertical" style={{ width: '100%' }}>
+                      <Table
+                        columns={genInfoColumns(flattenArray(_.records.execute_info) || [])}
+                        dataSource={flattenArray(_.records.execute_info) || []}
+                        size="small"
                       />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="新增数量"
-                        value={execute_info?.goods_sales?.inserted}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="更新数量"
-                        value={execute_info?.goods_sales?.updated}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                  </Row>
-                  {Array.isArray(execute_info?.goods_sales?.extra) && (
-                    <Row style={{ marginTop: '12px' }}>
-                      {execute_info?.goods_sales?.extra.map((item) => (
-                        <Col span={12}>
-                          <Statistic
-                            title={item.data_source + '未关联数量'}
-                            value={item.maintainable || 0}
-                            precision={2}
-                            valueStyle={{ color: '#cf1322' }}
-                            formatter={formatter}
-                            prefix={<InfoCircleOutlined />}
-                          />
-                          <Button
-                            danger
-                            onClick={() => downloadFile(item.template_file || '')}
-                            style={{ marginTop: '10px' }}
-                          >
-                            下载修改
-                          </Button>
-                        </Col>
-                      ))}
-                    </Row>
-                  )}
-                </Card>
-              </Col>
-            )}
-            {execute_info?.goods_commission && (
-              <Col span={12}>
-                <Card
-                  bordered={false}
-                  title="商品佣金"
-                  extra={
-                    <Button type="link" block onClick={() => jump('/goods/commission-management')}>
-                      去页面查看
-                    </Button>
-                  }
-                >
-                  <Row>
-                    <Col span={8}>
-                      <Statistic
-                        title="现存数量"
-                        value={execute_info?.goods_commission?.exists}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="新增数量"
-                        value={execute_info?.goods_commission?.inserted}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="更新数量"
-                        value={execute_info?.goods_commission?.updated}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            )}
-            {execute_info?.account && (
-              <Col span={12} style={{ marginTop: '20px' }}>
-                <Card
-                  bordered={false}
-                  title="账号管理"
-                  extra={
-                    <Button type="link" block onClick={() => jump('/accounts')}>
-                      去页面查看
-                    </Button>
-                  }
-                >
-                  <Row>
-                    <Col span={8}>
-                      <Statistic
-                        title="现存数量"
-                        value={execute_info?.account?.exists}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="新增数量"
-                        value={execute_info?.account?.inserted}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="更新数量"
-                        value={execute_info?.account?.updated}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            )}
-            {execute_info?.cooperator && (
-              <Col span={12} style={{ marginTop: '20px' }}>
-                <Card
-                  bordered={false}
-                  title="联创公司"
-                  extra={
-                    <Button type="link" block onClick={() => jump('/cooperator-list')}>
-                      去页面查看
-                    </Button>
-                  }
-                >
-                  <Row>
-                    <Col span={8}>
-                      <Statistic
-                        title="现存数量"
-                        value={execute_info?.cooperator?.exists}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="新增数量"
-                        value={execute_info?.cooperator?.inserted}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                    <Col span={8}>
-                      <Statistic
-                        title="更新数量"
-                        value={execute_info?.cooperator?.updated}
-                        precision={2}
-                        valueStyle={{ color: '#3f8600' }}
-                        formatter={formatter}
-                      />
-                    </Col>
-                  </Row>
-                </Card>
-              </Col>
-            )}
-          </Row>
-        )}
+                    </Space>
+                  ),
+                },
+              ]}
+            />
+          ))}
+        </Space>
       </div>
       <div>
         <FloatButton

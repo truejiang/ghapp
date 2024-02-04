@@ -222,7 +222,7 @@ const TableList: React.FC = () => {
               if (!start_date || !end_date) return message.warning('时间范围未选择');
               if (isEmpty(order_status_check) || !order_status_check) return message.warning('订单状态未选择')
               downloadPost(
-                '/api/v1/finances/report/download',
+                '/api/v1/tools/download/reports',
                 { ...reportDate.current, order_status_check },
                 `分账报告 ${start_date}-${end_date}`,
                 { 'Content-Type': 'application/json', Authorization: getToken() },

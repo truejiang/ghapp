@@ -1,7 +1,4 @@
 import { getGoodsOrderStatus, getGoodsSales } from '@/services/ant-design-pro/goods-sales';
-import { download } from '@/utils/dowload';
-import { getToken } from '@/utils/indexs';
-import { FileExcelOutlined, UploadOutlined } from '@ant-design/icons';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import { PageContainer, ProDescriptions, ProTable } from '@ant-design/pro-components';
 import { useIntl, useRequest } from '@umijs/max';
@@ -15,11 +12,6 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.GoodsListItem>();
-
-  const [data_source, set_data_source] = useState('');
-  const [create_related_data, set_create_related_data] = useState(true);
-
-  const [spinning, setSpinning] = React.useState<boolean>(false);
 
   const [columnsStateMap, setColumnsStateMap] = useState<Record<string, ColumnsState>>({
     commission_rate: {
@@ -88,7 +80,6 @@ const TableList: React.FC = () => {
     {
       title: '付款时间',
       dataIndex: 'payment_timestamp',
-      valueType: 'date',
       ellipsis: true,
       hideInSearch: true
     },
@@ -97,12 +88,12 @@ const TableList: React.FC = () => {
       dataIndex: 'payment_timestamp',
       valueType: 'dateRange',
       ellipsis: true,
-      hideInTable: true
+      hideInTable: true,
+      hideInDescriptions: true
     },
     {
       title: '结算时间',
       dataIndex: 'settlement_timestamp',
-      valueType: 'date',
       ellipsis: true,
       hideInSearch: true
     },
@@ -166,30 +157,17 @@ const TableList: React.FC = () => {
       hideInSearch: true
     },
     {
-      title: '抖音号名称(备注)',
+      title: '账号名称',
       dataIndex: 'account_name',
       valueType: 'text',
       ellipsis: true,
     },
     {
-      title: '抖音ID',
+      title: '账号ID',
       dataIndex: 'account_id',
       valueType: 'text',
       ellipsis: true,
       hideInSearch: true
-    },
-    {
-      title: '抖音UID',
-      dataIndex: 'account_uid',
-      valueType: 'text',
-      ellipsis: true,
-      hideInSearch: true
-    },
-    {
-      title: '运营人',
-      dataIndex: 'operator',
-      ellipsis: true,
-      valueType: 'text',
     },
     {
       title: '数据来源',
@@ -209,7 +187,6 @@ const TableList: React.FC = () => {
       title: '创建时间',
       dataIndex: 'created_timestamp',
       ellipsis: true,
-      valueType: 'date',
       hideInSearch: true
     },
   ];
@@ -218,10 +195,7 @@ const TableList: React.FC = () => {
     <PageContainer>
       
       <ProTable<API.GoodsListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.goods.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle="商品订单"
         actionRef={actionRef}
         rowKey="key"
         search={{

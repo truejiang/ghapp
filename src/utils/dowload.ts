@@ -3,6 +3,15 @@ import { message } from 'antd';
 import { saveAs } from 'file-saver';
 import { getToken } from './indexs';
 
+function getFilename(contentDisposition) {
+  const filenameRegex = /filename\*=utf-8''([^;]+)/;
+  const match = filenameRegex.exec(contentDisposition);
+  if (match && match[1]) {
+      return decodeURIComponent(match[1]);
+  }
+  return null;
+}
+
 // 通用下载方法
 export function download(
   url: string,
@@ -39,13 +48,20 @@ export function downloadPost(
   headers = { 'Content-Type': 'application/x-www-form-urlencoded', Authorization: getToken() },
 ) {
   return new Promise((resolve, reject) => {
-    request(url, {
+    fetch(url, {
       method: 'POST',
       headers,
       responseType: 'blob',
-      data,
+      body: JSON.stringify(data),
     })
-      .then(async (data) => {
+      .then(response => response)
+      .then(async (response) => {
+        const { headers } = response
+        if(!fileName) {
+          const contentDisposition = headers.get('Content-Disposition');
+          fileName = getFilename(contentDisposition);
+        }
+        const data = await response.blob()
         // const blob = new Blob([data]);
         saveAs(data, fileName);
         resolve()

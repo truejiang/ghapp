@@ -194,7 +194,7 @@ const TableList: React.FC = () => {
       return message.warning('在左上角选择模版的平台吧');
     }
     download(
-      '/api/v1/goods/templates/download',
+      '/api/v1/tools/download/templates',
       {
         template_filename,
       },

@@ -109,4 +109,62 @@ declare namespace API {
     /** User Status */
     userStatus?: number;
   };
+
+  type IpPayListItem = {
+    id: number;
+    cooperator_id: string;
+    cooperator_name: string;
+    account_id: string;
+    account_name: string;
+    split_rate: number;
+    fixed_charges: number;
+    remarks: string;
+    created_by_userid: number;
+    created_timestamp: string;
+    modified_by_userid: number;
+    modified_timestamp: string;
+  };
+
+  // 供应链列表返回值
+  type ShopListItem = {
+    report_execute_id: any;
+    report_filter: string;
+    execute_info: ReactNode;
+    id: number;
+    shop: string;
+    goods_name: string;
+    commission_rate: number;
+    commission_fixed: number;
+    price: number;
+    created_by_userid: number;
+    created_timestamp: string;
+    modified_by_userid: number;
+    modified_timestamp: string;
+    execute_id?: string;
+  };
+
+  type CreateShopItem = {
+    shop_id: string,
+    shop: string,
+    is_supplier: true,
+    annotation: string,
+    data_source: string | "系统",
+    execute_id: string,
+    created_by_userid: number,
+    modified_by_userid: number
+  }
+
+  type UpdateShopListItem = {
+    shop_id: string,
+    is_supplier: boolean,
+    annotation?: string,
+    modified_by_userid?: number
+  }
+
+  type DataBatchImportHistoryListParams = {
+    is_repeal: boolean,
+    report_execute_id: string,
+    modified_by_userid: number,
+    modified_timestamp: string
+  }
 }

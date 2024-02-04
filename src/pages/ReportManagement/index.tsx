@@ -41,10 +41,9 @@ const TableList: React.FC = () => {
 
   const reportDate = useRef({ start_date: '', end_date: '' });
 
-  const { data } = useRequest(() => getGoodsOrderStatus());
+  const { data, run: runGetGoodsOrderStatus } = useRequest(getGoodsOrderStatus);
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
   const [loading, setLoading] = useState<boolean>(false);
-  const [cooperator_id_check, set_cooperator_id_check] = useState([]);
   const { data: templateOptions } = useRequest(() => getTemplateOptions());
 
   const ref1 = useRef(null);
@@ -82,7 +81,11 @@ const TableList: React.FC = () => {
         )}
       />
       <div ref={ref2}>
-        <Form layout="inline" form={form}>
+        <Form layout="inline" form={form} onValuesChange={(changedValues) => {
+          if(!isEmpty(changedValues) && !!changedValues.data_source) {
+            runGetGoodsOrderStatus({data_source: changedValues.data_source})
+          }
+        }}>
           <Flex style={{ marginBottom: '12px' }}>
             <Space>
               <Form.Item label="平台来源" name="data_source">
@@ -106,7 +109,7 @@ const TableList: React.FC = () => {
                   maxTagCount={1}
                 />
               </Form.Item>
-              <Form.Item label="联创公司" name="cooperator_id_check">
+              {/* <Form.Item label="联创公司" name="cooperator_id_check">
                 <Select
                   mode="multiple"
                   placeholder="请选择联创公司"
@@ -119,7 +122,7 @@ const TableList: React.FC = () => {
                   filterOption={filterOption}
                   maxTagCount={1}
                 />
-              </Form.Item>
+              </Form.Item> */}
             </Space>
           </Flex>
           <Flex style={{ marginBottom: '12px' }}>
@@ -164,7 +167,7 @@ const TableList: React.FC = () => {
                       cooperator_id_check,
                       report_name: reportType,
                     },
-                    `${reportType} ${start_date}-${end_date}`,
+                    undefined,
                     { 'Content-Type': 'application/json', Authorization: getToken() },
                   );
                 } catch (error) {
@@ -183,7 +186,7 @@ const TableList: React.FC = () => {
                       report_name: reportType,
                       cooperator_id_check,
                     },
-                    `${reportType} ${start_date}-${end_date}`,
+                    undefined,
                     { 'Content-Type': 'application/json', Authorization: getToken() },
                   );
                 } catch (error) {} finally {
