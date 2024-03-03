@@ -1,11 +1,6 @@
 import {
   ModalForm,
-  ProFormDateTimePicker,
-  ProFormRadio,
-  ProFormSelect,
   ProFormText,
-  ProFormTextArea,
-  StepsForm,
 } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import React from 'react';
@@ -29,10 +24,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const intl = useIntl();
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.accounts.createForm.accounts',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}
@@ -47,12 +39,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage
-                id="pages.accounts.account_id"
-                defaultMessage="账号ID必须输入"
-              />
-            ),
+            message: "账号ID必须输入",
           },
         ]}
         width="md"
@@ -64,12 +51,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage
-                id="pages.accounts.account_name"
-                defaultMessage="账户名称必须输入"
-              />
-            ),
+            message: "账户名称必须输入",
           },
         ]}
         width="md"

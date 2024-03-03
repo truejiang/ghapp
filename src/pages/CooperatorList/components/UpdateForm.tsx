@@ -1,13 +1,7 @@
 import {
   ModalForm,
-  ProFormDateTimePicker,
-  ProFormRadio,
-  ProFormSelect,
   ProFormText,
-  ProFormTextArea,
-  StepsForm,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import React from 'react';
 
 export type FormValueType = {
@@ -26,13 +20,9 @@ export type UpdateFormProps = {
 };
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
-  const intl = useIntl();
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.cooperatorList.createForm.cooperatorList',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}
@@ -47,12 +37,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage
-                id="pages.cooperatorList.name"
-                defaultMessage="联创公司必须输入"
-              />
-            ),
+            message: '联创公司必须输入',
           },
         ]}
         width="md"

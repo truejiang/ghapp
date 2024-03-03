@@ -101,7 +101,6 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.AccountsListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.AccountsListItem[]>([]);
 
   const restFormRef = useRef(null);
   /**
@@ -112,8 +111,7 @@ const TableList: React.FC = () => {
 
   const columns: ProColumns<API.AccountsListItem>[] = [
     {
-      title: <FormattedMessage id="pages.accounts.account_id" defaultMessage="账号ID" />,
-      dataIndex: 'account_id',
+      title: "账号ID",
       render: (dom, entity) => {
         return (
           <a
@@ -128,18 +126,18 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.accounts.account_name" defaultMessage="账户名称" />,
+      title: "账户名称",
       dataIndex: 'account_name',
       valueType: 'text',
     },
     {
-      title: <FormattedMessage id="pages.accounts.platform" defaultMessage="平台名称" />,
+      title: "平台名称",
       dataIndex: 'platform',
       valueType: 'text',
       hideInSearch: true
     },
     {
-      title: <FormattedMessage id="pages.accounts.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
@@ -150,7 +148,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+          编辑
         </a>,
         <Popconfirm
           key="delete"
@@ -192,7 +190,7 @@ showHiddenNum: true
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> <FormattedMessage id="pages.accounts.add" defaultMessage="新增" />
+            <PlusOutlined /> 新增
           </Button>,
         ]}
         request={getAccounts}
@@ -204,10 +202,7 @@ showHiddenNum: true
         // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.accounts.createForm.accounts',
-          defaultMessage: '新增',
-        })}
+        title={'新增'}
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}
@@ -229,12 +224,7 @@ showHiddenNum: true
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.accounts.account_id"
-                  defaultMessage="账号ID必须输入"
-                />
-              ),
+              message: "账号ID必须输入",
             },
           ]}
           width="md"
@@ -245,12 +235,7 @@ showHiddenNum: true
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.accounts.account_name"
-                  defaultMessage="账户名称必须输入"
-                />
-              ),
+              message: "账户名称必须输入",
             },
           ]}
           width="md"

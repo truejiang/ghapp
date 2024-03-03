@@ -2,7 +2,7 @@
 /* eslint-disable */
 import { request } from '@umijs/max';
 import { RcFile, UploadFile } from 'antd/es/upload/interface';
-import { isEmpty } from 'lodash'
+import { isEmpty } from 'lodash';
 
 /** 获取财务列表 GET /api/v1/finances/ */
 export async function getFinances(
@@ -15,69 +15,67 @@ export async function getFinances(
   },
   options?: { [key: string]: any },
 ) {
-  const { current: page_num, pageSize: page_size, ...query } = params
+  const { current: page_num, pageSize: page_size, ...query } = params;
 
-  if(isEmpty(query)) {
+  if (isEmpty(query)) {
     const res = request<API.FinancesList>('/api/v1/finances/', {
       method: 'GET',
       params: {
         page_num: params.current,
-        page_size: params.pageSize
+        page_size: params.pageSize,
       },
       ...(options || {}),
     });
-  
-    const { items, total_items} = (await res).page_data.items
-  
-    return { 
+
+    const { items, total_items } = (await res).page_data.items;
+
+    return {
       data: items,
-      total: total_items
-    }
+      total: total_items,
+    };
   } else {
-    const { ..._} = query
+    const { ..._ } = query;
 
     const res = request<API.FinancesList>('/api/v1/finances/fin_split/filter', {
       method: 'POST',
       data: {
         ..._,
         page_num: params.current,
-        page_size: params.pageSize
+        page_size: params.pageSize,
       },
       ...(options || {}),
     });
-  
-    const { items, total_items} = (await res).page_data.items
-  
-    return { 
+
+    const { items, total_items } = (await res).page_data.items;
+
+    return {
       data: items,
-      total: total_items
-    }
+      total: total_items,
+    };
   }
-  
 }
 
 /** 根据id获取财务详情 GET /api/v1/finances/ */
-export async function getFinance(
-  finance_id: string,
-  options?: { [key: string]: any },
-) {
-
+export async function getFinance(finance_id: string, options?: { [key: string]: any }) {
   const res = request<API.FinancesList>('/api/v1/finances/' + finance_id, {
     method: 'GET',
     ...(options || {}),
   });
 
-  const { items, total_items} = (await res).page_data.items
+  const { items, total_items } = (await res).page_data.items;
 
-  return { 
+  return {
     data: items,
-    total: total_items
-  }
+    total: total_items,
+  };
 }
 
 /** 编辑财务 PUT /api/v1/finances/ */
-export async function updateFinance(params: API.FinancesListItem, options?: { [key: string]: any }) {
-  const {id, ...data} = params
+export async function updateFinance(
+  params: API.FinancesListItem,
+  options?: { [key: string]: any },
+) {
+  const { id, ...data } = params;
   return request<API.FinancesListItem>('/api/v1/finances/' + id, {
     method: 'PUT',
     data,
@@ -102,7 +100,10 @@ export async function removeFinance(id: number, options?: { [key: string]: any }
   });
 }
 
-export async function downloadReport(params: API.FinancesReportQuery, options?: { [key: string]: any }) {
+export async function downloadReport(
+  params: API.FinancesReportQuery,
+  options?: { [key: string]: any },
+) {
   return request<API.FinancesReportQuery>('/api/v1/tools/download/reports/', {
     method: 'POST',
     params,
@@ -110,18 +111,21 @@ export async function downloadReport(params: API.FinancesReportQuery, options?: 
   });
 }
 
-export async function dataBatchImport(data: {data_source: string, file_list: UploadFile[]}, options?: { [key: string]: any }) {
-  const { data_source, file_list = [] } = data
+export async function dataBatchImport(
+  data: { data_source: string; file_list: UploadFile[] },
+  options?: { [key: string]: any },
+) {
+  const { data_source, file_list = [] } = data;
   const formData = new FormData();
-    file_list.forEach((file) => {
-      formData.append('file_list', file as RcFile);
-    });
+  file_list.forEach((file) => {
+    formData.append('file_list', file as RcFile);
+  });
 
   return request('/api/v1/tools/upload/excel_list', {
     method: 'POST',
     data: formData,
     params: {
-      data_source
+      data_source,
     },
     ...(options || {}),
   });
@@ -135,15 +139,14 @@ export async function getDataImportHistoryList(params: {
   /** 页面的容量 */
   pageSize?: number;
 }) {
-  const { current: page_num, pageSize: page_size, ...query } = params
-
+  const { current: page_num, pageSize: page_size, ...query } = params;
 
   const res = request('/api/v1/history/upload_history/', {
     method: 'GET',
     params: {
       page_num: params.current,
       page_size: params.pageSize,
-      ...query
+      ...query,
     },
   });
 
@@ -158,16 +161,35 @@ export async function getDataImportHistoryList(params: {
 /** 根据id获取数据批导历史记录 GET /api/v1/history/upload_history/ */
 export async function getDataImportHistory(execute_id: string) {
   return request('/api/v1/history/upload_history/' + execute_id, {
-    method: 'GET'
+    method: 'GET',
   });
 }
 
 /** 更新数据批导历史记录 PUT /api/v1/history/upload_history/ */
 export async function updateDataImportHistory(execute_id: string) {
-   return request('/api/v1/history/upload_history/' + execute_id, {
+  return request('/api/v1/history/upload_history/' + execute_id, {
     method: 'GET',
     params: {
-      is_repeal: true
-    }
+      is_repeal: true,
+    },
   });
+}
+
+/** 刷新上传记录返回数据 */
+export async function refreshUploadHistoryRecord(execute_id_check: string[]) {
+  const res = request('/api/v1/history/upload_history/filter/', {
+    method: 'GET',
+    params: {
+      execute_id_check,
+      page_num: 1,
+      page_size: 100,
+    },
+  });
+
+  const { items, total_items } = (await res).page_data.items;
+
+  return {
+    data: items,
+    total: total_items,
+  };
 }

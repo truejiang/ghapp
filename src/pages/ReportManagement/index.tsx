@@ -1,4 +1,3 @@
-import { getCooperators } from '@/services/ant-design-pro/cooperator';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { getGoodsOrderStatus } from '@/services/ant-design-pro/goods-sales';
 import { getOptionsOrderStatusCheck } from '@/services/ant-design-pro/reportManagment';
@@ -11,31 +10,12 @@ import { Button, DatePicker, Flex, Form, message, Select, Space, Tour } from 'an
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
 
-function getNextDay(dateString: string): string {
-  const date = new Date(dateString);
-  date.setDate(date.getDate() + 1);
-  const year = date.getFullYear();
-  let month = (date.getMonth() + 1).toString();
-  let day = date.getDate().toString();
-
-  // 如果月份和日期小于10，前面补0
-  month = month.length < 2 ? '0' + month : month;
-  day = day.length < 2 ? '0' + day : day;
-
-  return `${year}-${month}-${day}`;
-}
-
-const filterOption = (input: string, option?: { label: string; value: string }) =>
-  (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
-
 const TableList: React.FC = () => {
   /**
    * @en-US The pop-up window of the distribution update window
    * @zh-CN 分布更新窗口的弹窗
    * */
   const [reportType, setReportType] = useState<string>('');
-
-  const { data: cooperatorList } = useRequest(() => getCooperators({ current: 1, pageSize: 9999 }));
 
   const [form] = Form.useForm();
 
@@ -97,7 +77,7 @@ const TableList: React.FC = () => {
                     form.setFieldValue('cooperator_id_check', []);
                     form.setFieldValue('dateRage', []);
                   }}
-                  options={templateOptions?.filter((_) => _.label?.startsWith('商品订单'))}
+                  options={templateOptions?.filter((_: { label: string; }) => _.label?.startsWith('商品订单'))}
                 />
               </Form.Item>
               <Form.Item label="订单状态" name="order_status_check">
@@ -109,27 +89,13 @@ const TableList: React.FC = () => {
                   maxTagCount={1}
                 />
               </Form.Item>
-              {/* <Form.Item label="联创公司" name="cooperator_id_check">
-                <Select
-                  mode="multiple"
-                  placeholder="请选择联创公司"
-                  style={{ width: 265 }}
-                  // onChange={set_cooperator_id_check}
-                  options={cooperatorList?.map((_) => ({
-                    label: _.name,
-                    value: _.id,
-                  }))}
-                  filterOption={filterOption}
-                  maxTagCount={1}
-                />
-              </Form.Item> */}
             </Space>
           </Flex>
           <Flex style={{ marginBottom: '12px' }}>
             <Space>
               <Form.Item label="时间范围" name="dateRage">
                 <DatePicker.RangePicker
-                  onChange={(dates: [any, any], dateStrings: [string, string]) => {
+                  onChange={(_, dateStrings: [string, string]) => {
                     const [start_date, end_date] = dateStrings;
                     reportDate.current = { start_date, end_date };
                   }}
@@ -208,9 +174,11 @@ const TableList: React.FC = () => {
             onChange={(value) => {
               if (typeof value === 'string') {
                 if (value === '联创分账报告') {
+                  runGetGoodsOrderStatus({data_source: '商品订单-供应链'})
                   form.setFieldValue('data_source', '商品订单-供应链');
                   
                 } else if (value === '商品销售日报') {
+                  runGetGoodsOrderStatus({data_source: '商品订单-抖老板'})
                   form.setFieldValue('data_source', '商品订单-抖老板');
                 }
                 
@@ -223,7 +191,7 @@ const TableList: React.FC = () => {
               form.setFieldValue('dateRage', []);
             }}
           >
-            {options?.map((_) => (
+            {options?.map((_: {label: string, value: string, description: string}) => (
               <CheckCard title={_.label} value={_.value} description={_.description} />
             ))}
           </CheckCard.Group>

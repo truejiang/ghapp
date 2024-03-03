@@ -1,5 +1,4 @@
-import { ModalForm, ProFormDigit, ProFormMoney, ProFormRadio, ProFormText } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
+import { ModalForm, ProFormRadio, ProFormText } from '@ant-design/pro-components';
 import React from 'react';
 
 export type FormValueType = {
@@ -18,7 +17,6 @@ export type UpdateFormProps = {
 };
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
-  const intl = useIntl();
   return (
     <ModalForm
       title='编辑'
@@ -36,7 +34,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: <FormattedMessage id="pages.goods.shop" defaultMessage="商铺名称必须输入" />,
+            message: "商铺名称必须输入",
           },
         ]}
         width="md"

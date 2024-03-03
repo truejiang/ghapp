@@ -7,7 +7,6 @@ import {
   ProColumns,
   ProDescriptions,
   ProDescriptionsItemProps,
-  ProFormDigit,
   ProFormRadio,
   ProFormText,
   ProTable,
@@ -15,7 +14,6 @@ import {
 import { Button, Drawer, message } from 'antd';
 import { useRef, useState } from 'react';
 import UpdateForm from './UpdateForm';
-
 /**
  * @en-US Add node
  * @zh-CN 添加节点
@@ -65,7 +63,6 @@ const Shop: React.FC = () => {
 
   const restFormRef = useRef(null)
   const actionRef = useRef<ActionType>();
-
 
   const columns: ProColumns<API.ShopListItem>[] = [
     {

@@ -5,16 +5,15 @@ import {
   PageContainer,
   ProDescriptions,
   ProFormDigit,
-  ProFormMoney,
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
 import { addGoods, removeGoods, updateGoods, getGoods } from '@/services/ant-design-pro/goods';
+import { API } from '@/services/ant-design-pro/typings';
 
 /**
  * @en-US Add node
@@ -102,14 +101,8 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.GoodsListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.GoodsListItem[]>([]);
 
-  const restFormRef = useRef(null)
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
+  const restFormRef = useRef(null);
 
   const columns: ProColumns<API.GoodsListItem>[] = [
     {
@@ -160,7 +153,7 @@ const TableList: React.FC = () => {
       dataIndex: 'commission_rate',
       valueType: "percent",
       width: 130,
-      render: (dom, entity) => {
+      render: (_, entity) => {
         return <>{typeof entity.commission_rate === 'number' ? (entity.commission_rate * 100).toFixed(2) : '-'}</>;
       },
       hideInSearch: true
@@ -170,7 +163,7 @@ const TableList: React.FC = () => {
       dataIndex: 'online_commission_rate',
       valueType: 'text',
       width: 130,
-      render: (dom, entity) => {
+      render: (_, entity) => {
         return <>{typeof entity.online_commission_rate === 'number' ? (entity.online_commission_rate * 100).toFixed(2) : '-'}</>;
       },
       hideInSearch: true
@@ -180,13 +173,13 @@ const TableList: React.FC = () => {
       dataIndex: 'offline_commission_rate',
       valueType: 'text',
       width: 130,
-      render: (dom, entity) => {
+      render: (_, entity) => {
         return <>{typeof entity.offline_commission_rate === 'number' ? (entity.offline_commission_rate * 100).toFixed(2) : '-'}</>;
       },
       hideInSearch: true
     },
     {
-      title: <FormattedMessage id="pages.goods.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       width: 180,
@@ -199,7 +192,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+          编辑
         </a>,
         <Popconfirm
           key='del'
@@ -244,7 +237,7 @@ showHiddenNum: true
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> <FormattedMessage id="pages.goods.add" defaultMessage="新增" />
+            <PlusOutlined /> 新增
           </Button>,
         ]}
         request={getGoods}
@@ -286,12 +279,7 @@ showHiddenNum: true
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.goods.shop"
-                  defaultMessage="店铺名称必须输入"
-                />
-              ),
+              message: '店铺名称必须输入',
             },
           ]}
           width="md"
@@ -302,12 +290,7 @@ showHiddenNum: true
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.goods.goods_name"
-                  defaultMessage="商品名称必须输入"
-                />
-              ),
+              message: '商品名称必须输入',
             },
           ]}
           width="md"

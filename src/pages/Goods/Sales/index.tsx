@@ -1,11 +1,10 @@
 import { getGoodsOrderStatus, getGoodsSales } from '@/services/ant-design-pro/goods-sales';
 import type { ActionType, ProColumns, ProDescriptionsItemProps } from '@ant-design/pro-components';
 import { PageContainer, ProDescriptions, ProTable } from '@ant-design/pro-components';
-import { useIntl, useRequest } from '@umijs/max';
-import { Button, Drawer, Flex, message, notification, Select, Space, Spin, Upload } from 'antd';
+import { Drawer } from 'antd';
 import React, { useRef, useState } from 'react';
 import './index.less';
-import { getTemplateOptions } from '@/services/ant-design-pro/goods';
+import { API } from '@/services/ant-design-pro/typings';
 
 const TableList: React.FC = () => {
   const [showDetail, setShowDetail] = useState<boolean>(false);
@@ -36,13 +35,6 @@ const TableList: React.FC = () => {
       show: false,
     },
   });
-
-  const { data } = useRequest(() => getTemplateOptions())
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
 
   const columns: ProColumns<API.GoodsListItem>[] = [
     {
@@ -201,7 +193,7 @@ const TableList: React.FC = () => {
         search={{
           labelWidth: 140,
           defaultCollapsed: false,
-showHiddenNum: true
+          showHiddenNum: true
         }}
         toolBarRender={() => []}
         request={getGoodsSales}

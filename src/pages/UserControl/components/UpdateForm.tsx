@@ -1,5 +1,4 @@
 import { ModalForm, ProFormSwitch, ProFormText } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import React from 'react';
 
 export type FormValueType = {
@@ -17,14 +16,10 @@ export type UpdateFormProps = {
   values: Partial<API.UserListItem>;
 };
 
-const UpdateForm: React.FC<UpdateFormProps> = (props) => {
-  const intl = useIntl();
+const UpdateForm: React.FC<UpdateFormProps> = (props: React.PropsWithChildren<UpdateFormProps>) => {
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.userControl.createForm.userControl',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}
@@ -40,9 +35,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage id="pages.userControl.username" defaultMessage="账号必须输入" />
-            ),
+            message: "账号必须输入",
           },
         ]}
         width="md"
@@ -57,9 +50,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
           },
           {
             required: true,
-            message: (
-              <FormattedMessage id="pages.userControl.email" defaultMessage="邮箱必须输入" />
-            ),
+            message: "邮箱必须输入",
           },
         ]}
         width="md"

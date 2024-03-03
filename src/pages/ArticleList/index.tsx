@@ -7,7 +7,6 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, Form, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
@@ -109,24 +108,12 @@ const TableList: React.FC = () => {
 
   const actionRef = useRef<ActionType>();
   const [currentRow, setCurrentRow] = useState<API.ArticleListItem>();
-  const [selectedRowsState, setSelectedRows] = useState<API.ArticleListItem[]>([]);
 
   const restFormRef = useRef(null)
 
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
-
   const columns: ProColumns<API.ArticleListItem>[] = [
     {
-      title: (
-        <FormattedMessage
-          id="pages.articleList.article_title"
-          defaultMessage="标题"
-        />
-      ),
+      title: "标题",
       dataIndex: 'article_title',
       render: (dom, entity) => {
         return (
@@ -142,7 +129,7 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.articleList.article_text" defaultMessage="内容" />,
+      title: "内容",
       dataIndex: 'article_text',
       valueType: 'text',
       render: (dom, entity) => {
@@ -150,12 +137,12 @@ const TableList: React.FC = () => {
       }
     },
     {
-      title: <FormattedMessage id="pages.articleList.tags" defaultMessage="标签" />,
+      title: "标签",
       dataIndex: 'tags',
       valueType: 'text',
     },
     {
-      title: <FormattedMessage id="pages.articleList.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
@@ -166,7 +153,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+          编辑
         </a>,
         <Popconfirm
           title="删除文章"
@@ -191,10 +178,7 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.ArticleListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.articleList.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={'文章管理'}
         actionRef={actionRef}
         rowKey="key"
         search={false}
@@ -206,22 +190,14 @@ const TableList: React.FC = () => {
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> <FormattedMessage id="pages.articleList.add" defaultMessage="新增" />
+            <PlusOutlined /> 新增
           </Button>,
         ]}
         request={getArticles}
         columns={columns}
-        // rowSelection={{
-        //   onChange: (_, selectedRows) => {
-        //     setSelectedRows(selectedRows);
-        //   },
-        // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.articleList.createForm.articleList',
-          defaultMessage: '新增',
-        })}
+        title={'新增'}
         width="800px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}
@@ -268,12 +244,7 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.articleList.tags"
-                  defaultMessage="标签必须输入"
-                />
-              ),
+              message: "标签必须输入",
             },
           ]}
           width="md"

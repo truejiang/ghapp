@@ -49,36 +49,6 @@ export default [
       }
     ]
   },
-  // {
-  //   name: '数据操作Beta',
-  //   icon: 'ImportOutlined',
-  //   path: '/data-operate-import-beta',
-  //   routes: [
-  //     {
-  //       path: '/data-operate-import-beta',
-  //       redirect: '/data-operate-import-beta/import',
-  //     },
-  //     {
-  //       name: '数据批导Beta',
-  //       icon: 'ImportOutlined',
-  //       path: '/data-operate-import-beta/import',
-  //       component: './DataBatchImportBeta',
-  //     },
-  //     {
-  //       name: '历史操作',
-  //       icon: 'table',
-  //       path: '/data-operate-import-beta/history',
-  //       component: './DataBatchImportBeta/HistoryRecord'
-  //     }
-  //   ]
-  // },
-  // {
-  //   name: '报告管理Beta',
-  //   icon: 'table',
-  //   path: '/report-management-beta',
-  //   component: './ReportManagementBeta'
-  //   ,
-  // },
   {
     path: '/user',
     layout: false,
@@ -116,12 +86,6 @@ export default [
       },
     ],
   },
-  // {
-  //   name: '文章管理',
-  //   icon: 'table',
-  //   path: '/article-list',
-  //   component: './ArticleList',
-  // },
   {
     name: '财务管理',
     icon: 'AccountBookOutlined',

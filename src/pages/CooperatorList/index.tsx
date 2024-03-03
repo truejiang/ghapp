@@ -7,7 +7,6 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
@@ -98,20 +97,10 @@ const TableList: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<API.CooperatorListItem>();
 
   const restFormRef = useRef(null)
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
 
   const columns: ProColumns<API.CooperatorListItem>[] = [
     {
-      title: (
-        <FormattedMessage
-          id="pages.cooperatorList.name"
-          defaultMessage="联创公司"
-        />
-      ),
+      title: "联创公司",
       dataIndex: 'name',
       render: (dom, entity) => {
         return (
@@ -127,12 +116,12 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.cooperatorList.founder" defaultMessage="创始人" />,
+      title: "创始人",
       dataIndex: 'founder',
       valueType: 'text',
     },
     {
-      title: <FormattedMessage id="pages.cooperatorList.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
@@ -143,7 +132,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+          编辑
         </a>,
         <Popconfirm
           key='del'
@@ -169,10 +158,7 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.CooperatorListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.cooperatorList.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={'联创管理'}
         actionRef={actionRef}
         rowKey="key"
         search={{
@@ -188,22 +174,14 @@ showHiddenNum: true
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> <FormattedMessage id="pages.cooperatorList.add" defaultMessage="新增" />
+            <PlusOutlined /> 新增
           </Button>,
         ]}
         request={getCooperators}
         columns={columns}
-        // rowSelection={{
-        //   onChange: (_, selectedRows) => {
-        //     setSelectedRows(selectedRows);
-        //   },
-        // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.cooperatorList.createForm.cooperatorList',
-          defaultMessage: '新增',
-        })}
+        title={'新增'}
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}
@@ -225,12 +203,7 @@ showHiddenNum: true
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.cooperatorList.name"
-                  defaultMessage="联创公司必须输入"
-                />
-              ),
+              message: '联创公司必须输入',
             },
           ]}
           width="md"

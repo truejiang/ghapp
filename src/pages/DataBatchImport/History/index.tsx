@@ -66,7 +66,7 @@ const HistoryUpload: React.FC = () => {
         // return '-'
         const _ = JSON.parse(record.execute_info);
 
-        return <Tooltip color="#ff4d4f" title={checkErrorData(_.execute_info) ? '数据需要处理' : ''}>
+        return <Tooltip color="#ff4d4f" title={checkErrorData(_.execute_info) ? '有数据需要维护' : ''}>
           <span
             style={{ color: checkErrorData(_.execute_info) ? '#ff4d4f' : '#52c41a' }}
           >
@@ -190,12 +190,12 @@ const HistoryUpload: React.FC = () => {
                 fileList.forEach((file) => {
                   formData.append('file_list', file as RcFile);
                 });
-
                 request('/api/v1/tools/upload/excel_list', {
                   method: 'POST',
                   data: formData,
                   params: {
                     data_source: record.data_source,
+                    execute_id: record.execute_id
                   },
                 })
                   .then((res = {}) => {
@@ -268,7 +268,7 @@ const HistoryUpload: React.FC = () => {
               <Table
                 key="data_source"
                 columns={genInfoColumns(flattenArray(_.execute_info) || [])}
-                dataSource={flattenArray(_.execute_info) || []}
+                dataSource={flattenArray(_.execute_info, { execute_id: _.execute_id }) || []}
                 size="small"
               />
             );

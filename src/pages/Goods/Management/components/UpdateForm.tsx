@@ -1,3 +1,4 @@
+import { API } from '@/services/ant-design-pro/typings';
 import { ModalForm, ProFormDigit, ProFormMoney, ProFormText } from '@ant-design/pro-components';
 import { FormattedMessage, useIntl } from '@umijs/max';
 import React from 'react';
@@ -21,10 +22,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const intl = useIntl();
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.goods.createForm.goods',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}
@@ -39,7 +37,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: <FormattedMessage id="pages.goods.shop" defaultMessage="商铺名称必须输入" />,
+            message: "商铺名称必须输入",
           },
         ]}
         width="md"
@@ -50,9 +48,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage id="pages.goods.goods_name" defaultMessage="商品名称必须输入" />
-            ),
+            message: "商品名称必须输入",
           },
         ]}
         width="md"

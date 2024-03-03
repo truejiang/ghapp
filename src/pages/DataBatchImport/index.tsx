@@ -1,4 +1,4 @@
-import { dataBatchImport, getDataImportHistory } from '@/services/ant-design-pro/dataBatchImport';
+import { dataBatchImport, getDataImportHistory, refreshUploadHistoryRecord } from '@/services/ant-design-pro/dataBatchImport';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { getReportHistoryById } from '@/services/ant-design-pro/reportManagment';
 import { download, downloadFile } from '@/utils/dowload';
@@ -6,13 +6,11 @@ import {
   CheckCircleOutlined,
   ExclamationCircleOutlined,
   UploadOutlined,
-  VerticalAlignBottomOutlined,
 } from '@ant-design/icons';
-import { PageContainer } from '@ant-design/pro-components';
+import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
 import { history, request, useRequest } from '@umijs/max';
 import {
   Button,
-  Collapse,
   Divider,
   Flex,
   FloatButton,
@@ -30,8 +28,7 @@ import {
 import { RcFile } from 'antd/es/upload/interface';
 import { TourProps } from 'antd/lib/tour/interface';
 import { isEmpty } from 'lodash';
-import React, { useRef, useState } from 'react';
-import CountUp from 'react-countup';
+import React, { useMemo, useRef, useState } from 'react';
 import helpPng from './help.png';
 
 type MyArrayElement = {
@@ -41,13 +38,14 @@ type MyArrayElement = {
 
 type ResultElement = Record<string, any>;
 
-export function flattenArray(arr: MyArrayElement[]): ResultElement[] {
+export function flattenArray(arr: MyArrayElement[], extraObj?: Record<'execute_id', string>): ResultElement[] {
   return arr.reduce<ResultElement[]>((result, item) => {
     let { extra = [{}], ..._ } = item;
     if (extra.length === 0) extra.push({});
     const _extra = extra.map((extraItem) => ({
       ..._,
       ...extraItem,
+      ...extraObj
     }));
     return [...result, ..._extra];
   }, []);
@@ -64,6 +62,7 @@ const TableList: React.FC = () => {
   const ref3 = useRef<HTMLButtonElement>(null);
   const ref4 = useRef<HTMLButtonElement>(null);
   const ref5 = useRef<HTMLButtonElement>(null);
+  const actionRef = useRef<ActionType>();
 
   const steps: TourProps['steps'] = [
     {
@@ -120,10 +119,15 @@ const TableList: React.FC = () => {
   const [file_list, set_file_list] = useState([]);
   const [uploading, setUploading] = useState(false);
 
-  const { run: runDataBatchImport } = useRequest(dataBatchImport, {
+  useRequest(dataBatchImport, {
     manual: true,
   });
-  // useRequest()
+
+  // 请求刷新上传历史记录接口
+  const { run: runRefreshUploadHistoryRecord, cancel: cancelRefreshUploadHistoryRecord } = useRequest(refreshUploadHistoryRecord, {
+    manual: true,
+    pollingInterval: 1500
+  });
 
   const handleUpload = () => {
     setUploading(true);
@@ -176,9 +180,13 @@ const TableList: React.FC = () => {
           //   }
           // });
           // console.log('summary', summary)
-          setexecute_info(success);
-
+          const execute_info = success.map(_ => ({..._, ..._.records}))
+          setexecute_info(execute_info);
           set_file_list([]);
+
+          // 每次重新上传后先停止之前的轮询，再重新开始请求
+          cancelRefreshUploadHistoryRecord()
+          runRefreshUploadHistoryRecord(execute_info.map(item => item?.execute_id))
         } else {
           notification.open({
             message: '错误提示',
@@ -204,11 +212,6 @@ const TableList: React.FC = () => {
       .finally(() => {
         setUploading(false);
       });
-  };
-  const formatter = (value: number) => <CountUp end={value} separator="," />;
-
-  const jump = (path: string) => {
-    history.push(path);
   };
 
   const downloadTemp = async () => {
@@ -239,19 +242,34 @@ const TableList: React.FC = () => {
     downloadFile(data_info[0].download || '');
   };
 
-  const genExtra = (report_execute_id: string) => (
-    <Button
-      onClick={(event) => {
-        handleDowloadReport(report_execute_id);
-        // If you don't want click extra trigger collapse, you can prevent this:
-        event.stopPropagation();
-      }}
-      type="link"
-      icon={<VerticalAlignBottomOutlined></VerticalAlignBottomOutlined>}
-    >
-      下载报告
-    </Button>
-  );
+  const columns: ProColumns<API.ShopListItem>[] = [
+    {
+      title: '上传文件名',
+      dataIndex: 'filename',
+      render(text, record) {
+        const _ = JSON.parse(record.execute_info);
+        return <Tooltip color="#ff4d4f" title={checkErrorData(_.execute_info) ? '有数据需要维护' : ''}>
+          <span
+            style={{ color: checkErrorData(_.execute_info) ? '#ff4d4f' : '#52c41a' }}
+          >
+            {text}
+          </span>
+        </Tooltip>
+      }
+    },
+    {
+      title: '上传平台',
+      dataIndex: 'data_source',
+    },
+    {
+      title: '生成报告',
+      dataIndex: 'report_execute_id',
+      render(text, record) {
+        if (!record.report_execute_id) return '-';
+        return <Button onClick={() => handleDowloadReport(record.report_execute_id)}>下载报告</Button>
+      },
+    }
+  ];
 
   const genInfoColumns = (
     dataSource: Record<string, any>[],
@@ -309,6 +327,7 @@ const TableList: React.FC = () => {
                   data: formData,
                   params: {
                     data_source: record.data_source,
+                    execute_id: record.execute_id
                   },
                 })
                   .then((res = {}) => {
@@ -354,6 +373,12 @@ const TableList: React.FC = () => {
     },
   ];
 
+  // 响应上传后返回的execute_info的execute_id集合
+  const execute_id_check = useMemo(() => {
+    // return execute_info?.map(_ => _?.record?.execute_id})
+    return execute_info?.map(item => item?.execute_id)
+  }, [execute_info])
+
   return (
     <PageContainer>
       <Tour
@@ -379,7 +404,7 @@ const TableList: React.FC = () => {
           <Button
             type="primary"
             onClick={handleUpload}
-            disabled={file_list.length === 0}
+            disabled={file_list.length === 0 || !data_source}
             loading={uploading}
             ref={ref3}
           >
@@ -416,7 +441,35 @@ const TableList: React.FC = () => {
       <Divider />
       <div ref={ref4}>
         <Space direction="vertical" style={{ width: '100%' }}>
-          {execute_info.map((_) => (
+          {!isEmpty(execute_info) && <ProTable
+            headerTitle="更新数据"
+            rowKey="execute_id"
+            options={{
+              reload() {
+                console.log('reload')
+
+              }
+            }}
+            // request={getDataImportHistoryList}
+            dataSource={execute_info || []}
+            columns={columns}
+            search={false}
+            actionRef={actionRef}
+            expandable={{
+              expandedRowRender: (record) => {
+                const _ = JSON.parse(record.execute_info);
+                return (
+                  <Table
+                    key="data_source"
+                    columns={genInfoColumns(flattenArray(_.execute_info) || [])}
+                    dataSource={flattenArray(_.execute_info, { execute_id: _.execute_id }) || []}
+                    size="small"
+                  />
+                );
+              },
+            }}
+          />}
+          {/* {execute_info.map((_) => (
             <Collapse
               key={_.filename}
               collapsible="header"
@@ -425,7 +478,7 @@ const TableList: React.FC = () => {
                 {
                   key: _.filename,
                   label: (
-                    <Tooltip color="#ff4d4f" title={checkErrorData(_.records.execute_info) ? '数据需要处理' : ''}>
+                    <Tooltip color="#ff4d4f" title={checkErrorData(_.records.execute_info) ? '有数据需要维护' : ''}>
                       <span
                         style={{ color: checkErrorData(_.records.execute_info) ? '#ff4d4f' : '#52c41a' }}
                       >
@@ -446,7 +499,7 @@ const TableList: React.FC = () => {
                 },
               ]}
             />
-          ))}
+          ))} */}
         </Space>
       </div>
       <div>

@@ -6,9 +6,9 @@ import {
   ProDescriptionsItemProps,
   ProTable,
 } from '@ant-design/pro-components';
-import { Button, Descriptions, Drawer, Popconfirm,  Table,  message } from 'antd';
+import { Descriptions, Drawer, Table } from 'antd';
 import { useRef, useState } from 'react';
-import { getReportHistoryList, updateReportHistory } from '@/services/ant-design-pro/reportManagment';
+import { getReportHistoryList } from '@/services/ant-design-pro/reportManagment';
 import { downloadFile } from '@/utils/dowload';
 
 type InputData = {
@@ -43,28 +43,6 @@ function transformData(data: InputData): OutputData[] {
   });
 }
 
-
-/**
- *  Delete node
- * @zh-CN 撤销记录
- *
- * @param user_id
- */
-const handleRemove = async (execute_id: string) => {
-  const hide = message.loading('正在撤销');
-  if (!execute_id) return true;
-  try {
-    await updateReportHistory(execute_id);
-    hide();
-    message.success('撤销成功！');
-    return true;
-  } catch (error) {
-    hide();
-    message.error('Delete failed, please try again');
-    return false;
-  }
-};
-
 const HistoryReport: React.FC = () => {
 
   const [currentRow, setCurrentRow] = useState<API.ShopListItem>();
@@ -77,7 +55,7 @@ const HistoryReport: React.FC = () => {
     {
       title: '报告名称',
       dataIndex: 'archived_filename',
-      render(text, record) {
+      render(text) {
         return <a>{text}</a>
       }
     },

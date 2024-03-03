@@ -29,10 +29,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
   const intl = useIntl();
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.cooperatorList.createForm.cooperatorList',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}

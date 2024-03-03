@@ -3,7 +3,6 @@ import { getCooperators } from '@/services/ant-design-pro/cooperator';
 import {
   ModalForm,
   ProFormDigit,
-  ProFormMoney,
   ProFormSelect,
   ProFormTextArea,
 } from '@ant-design/pro-components';
@@ -36,10 +35,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
 
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.cooperatorList.createForm.cooperatorList',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="400px"
       open={props.updateModalOpen}
       onFinish={props.onSubmit}

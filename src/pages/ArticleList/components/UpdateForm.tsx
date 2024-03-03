@@ -1,5 +1,4 @@
 import { ModalForm, ProFormText } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import { Form, message } from 'antd';
 import React, { useEffect, useState } from 'react';
 import ReactQuill from 'react-quill';
@@ -28,13 +27,9 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
     setIsInitialRender(false)
   }, [props.values.article_text]);
 
-  const intl = useIntl();
   return (
     <ModalForm
-      title={intl.formatMessage({
-        id: 'pages.articleList.createForm.articleList',
-        defaultMessage: '编辑',
-      })}
+      title={'编辑'}
       width="800px"
       open={props.updateModalOpen}
       onFinish={async (value) => {
@@ -56,12 +51,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: (
-              <FormattedMessage
-                id="pages.articleList.article_title"
-                defaultMessage="标题必须输入"
-              />
-            ),
+            message: "标题必须输入",
           },
         ]}
         width="md"
@@ -83,7 +73,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props) => {
         rules={[
           {
             required: true,
-            message: <FormattedMessage id="pages.articleList.tags" defaultMessage="标签必须输入" />,
+            message: "标签必须输入",
           },
         ]}
         width="md"

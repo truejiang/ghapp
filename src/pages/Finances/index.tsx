@@ -17,7 +17,7 @@ import {
   ProFormTextArea,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
+import { useRequest } from '@umijs/max';
 import { Button, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
@@ -134,11 +134,6 @@ const TableList: React.FC = () => {
   const { data: accountList } = useRequest(() => getAccounts({ current: 1, pageSize: 9999 }));
 
   const restFormRef = useRef(null);
-  /**
-   * @en-US International configuration
-   * @zh-CN 国际化配置
-   * */
-  const intl = useIntl();
 
   const columns: ProColumns<API.FinancesListItem>[] = [
     {
@@ -174,8 +169,7 @@ const TableList: React.FC = () => {
       fieldProps: {
         mode: 'multiple',
         maxTagCount: 'responsive',
-        filterOption: (inputValue, option = {}) => {
-          console.log("🚀 ~ inputValue:", inputValue,option)
+        filterOption: (inputValue: string, option = {}) => {
           const {label = '', value = ''} = option
           if(value.includes(inputValue.trim()) || label.includes(inputValue.trim())) return true
           return false
@@ -184,7 +178,7 @@ const TableList: React.FC = () => {
       hideInTable: true
     },
     {
-      title: <FormattedMessage id="pages.finances.account_id" defaultMessage="账号名称" />,
+      title: "账号名称",
       dataIndex: 'account_id',
       render: (dom, entity) => {
         return (
@@ -218,7 +212,7 @@ const TableList: React.FC = () => {
       fieldProps: { precision: 2, step: 0.1, max: 1, min: 0 }
     },
     {
-      title: <FormattedMessage id="pages.finances.fixed_charges" defaultMessage="固定分红" />,
+      title: "固定分红",
       dataIndex: 'fixed_charges',
       valueType: 'text',
       hideInSearch: true,
@@ -229,13 +223,13 @@ const TableList: React.FC = () => {
       valueType: 'text',
     },
     {
-      title: <FormattedMessage id="pages.finances.remarks" defaultMessage="固定分红" />,
+      title: "固定分红",
       dataIndex: 'remarks',
       valueType: 'text',
       hideInSearch: true,
     },
     {
-      title: <FormattedMessage id="pages.finances.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
@@ -246,7 +240,7 @@ const TableList: React.FC = () => {
             setCurrentRow(record);
           }}
         >
-          <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+          编辑
         </a>,
         <Popconfirm
           title="删除"
@@ -268,10 +262,7 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.FinancesListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.finances.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={'分账配置'}
         actionRef={actionRef}
         rowKey="key"
         search={{
@@ -287,22 +278,14 @@ const TableList: React.FC = () => {
               handleModalOpen(true);
             }}
           >
-            <PlusOutlined /> <FormattedMessage id="pages.finances.add" defaultMessage="新增" />
+            <PlusOutlined /> 新增
           </Button>,
         ]}
         request={getFinances}
         columns={columns}
-        // rowSelection={{
-        //   onChange: (_, selectedRows) => {
-        //     setSelectedRows(selectedRows);
-        //   },
-        // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.finances.createForm.finances',
-          defaultMessage: '新增',
-        })}
+        title={'新增'}
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}

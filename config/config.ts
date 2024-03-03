@@ -154,5 +154,5 @@ export default defineConfig({
   requestRecord: {},
   esbuildMinifyIIFE: true,
   // 缓存？
-  keepalive: ['/data-batch-import', '/report-management']
+  keepalive: ['/data-batch-import/index', '/data-batch-import/record']
 });
