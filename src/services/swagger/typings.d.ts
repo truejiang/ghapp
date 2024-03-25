@@ -362,13 +362,14 @@ declare namespace API {
   // 账号管理
   type AccountsListItem = {
     id?: number;
-    account_id: number;
+    account_id: string;
     account_name: string;
     platform?: string;
     created_by_userid?: string;
     created_timestamp?: string;
     modified_by_userid?: string;
     modified_timestamp?: string;
+    is_authorizedDY: boolean;
   }
 
   // 账号管理列表

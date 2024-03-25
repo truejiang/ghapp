@@ -1,3 +1,4 @@
+import { getCooperators } from '@/services/ant-design-pro/cooperator';
 import { getTemplateOptions } from '@/services/ant-design-pro/goods';
 import { getGoodsOrderStatus } from '@/services/ant-design-pro/goods-sales';
 import { getOptionsOrderStatusCheck } from '@/services/ant-design-pro/reportManagment';
@@ -9,6 +10,9 @@ import { useRequest } from '@umijs/max';
 import { Button, DatePicker, Flex, Form, message, Select, Space, Tour } from 'antd';
 import { isEmpty } from 'lodash';
 import React, { useRef, useState } from 'react';
+
+const filterOption = (input: string, option?: { label: string; value: string }) =>
+  (option?.label ?? '').toLowerCase().includes(input.toLowerCase());
 
 const TableList: React.FC = () => {
   /**
@@ -22,9 +26,12 @@ const TableList: React.FC = () => {
   const reportDate = useRef({ start_date: '', end_date: '' });
 
   const { data, run: runGetGoodsOrderStatus } = useRequest(getGoodsOrderStatus);
+  const { data: cooperatorList } = useRequest(() => getCooperators({ current: 1, pageSize: 9999 }));
+
   const { data: options } = useRequest(() => getOptionsOrderStatusCheck());
   const [loading, setLoading] = useState<boolean>(false);
   const { data: templateOptions } = useRequest(() => getTemplateOptions());
+  const [cooperator_id_check, set_cooperator_id_check] = useState([]);
 
   const ref1 = useRef(null);
   const ref2 = useRef(null);
@@ -89,6 +96,20 @@ const TableList: React.FC = () => {
                   maxTagCount={1}
                 />
               </Form.Item>
+              <Form.Item label="联创公司" name="cooperator_id_check">
+                <Select
+                  mode="multiple"
+                  placeholder="请选择联创公司"
+                  style={{ width: 200, marginRight: '12px' }}
+                  onChange={set_cooperator_id_check}
+                  options={cooperatorList?.map(_ => ({
+                    label: _.name,
+                    value: _.id
+                  }))}
+                  filterOption={filterOption}
+                  maxTagCount={1}
+                />
+              </Form.Item>
             </Space>
           </Flex>
           <Flex style={{ marginBottom: '12px' }}>
@@ -141,6 +162,24 @@ const TableList: React.FC = () => {
                   setLoading(false);
                 }
               } else if (reportType === '商品销售日报') {
+                try {
+                  await downloadPost(
+                    '/api/v1/tools/download/reports',
+                    {
+                      start_date,
+                      end_date,
+                      data_source,
+                      order_status_check,
+                      report_name: reportType,
+                      cooperator_id_check,
+                    },
+                    undefined,
+                    { 'Content-Type': 'application/json', Authorization: getToken() },
+                  );
+                } catch (error) {} finally {
+                  setLoading(false);
+                }
+              } else {
                 try {
                   await downloadPost(
                     '/api/v1/tools/download/reports',

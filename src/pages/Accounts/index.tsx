@@ -13,11 +13,11 @@ import {
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import { Button, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
+import { copyToClipboard } from '@/utils/indexs';
 
 /**
  * @en-US Add node
@@ -27,7 +27,7 @@ import UpdateForm from './components/UpdateForm';
 const handleAdd = async (fields: API.AccountsListItem) => {
   const hide = message.loading('正在添加');
   try {
-    await addAccount({ ...fields, user_id: 0, created_by_userid: 0 });
+    await addAccount({ ...fields, user_id: 0 });
     hide();
     message.success('添加成功！');
     return true;
@@ -85,6 +85,10 @@ const handleRemove = async (account_id: number) => {
   }
 };
 
+const getAuthorizedUrl = (user_id: string) => {
+  return 'https://open.douyin.com/platform/oauth/connect/?client_key=awj3ovfd91zmvrki&response_type=code&scope=user_info,trial.whitelist&optionalScope=&redirect_uri=https://api.acumind.cn/api/auth/callback&state=' + user_id
+}
+
 const TableList: React.FC = () => {
   /**
    * @en-US Pop-up window of new window
@@ -107,11 +111,11 @@ const TableList: React.FC = () => {
    * @en-US International configuration
    * @zh-CN 国际化配置
    * */
-  const intl = useIntl();
 
   const columns: ProColumns<API.AccountsListItem>[] = [
     {
       title: "账号ID",
+      dataIndex: "account_id",
       render: (dom, entity) => {
         return (
           <a
@@ -137,10 +141,35 @@ const TableList: React.FC = () => {
       hideInSearch: true
     },
     {
+      title: "是否授权抖音",
+      dataIndex: 'is_authorizedDY',
+      hideInSearch: true,
+      render: (_, entity) => {
+        return (
+          <span
+          >
+            {entity.is_authorizedDY ? '是' : '否'}
+          </span>
+        );
+      },
+    },
+    {
       title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => [
+        <a
+          key="config"
+          onClick={() => {
+            copyToClipboard(getAuthorizedUrl(record.account_id)).then(() => {
+              message.success('复制分享链接成功，发送给对方扫码后激活！')
+            }).catch((error) => {
+              message.error(error);
+            })
+          }}
+        >
+          分享授权链接
+        </a>,
         <a
           key="config"
           onClick={() => {
@@ -171,12 +200,9 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.AccountsListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.accounts.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={'账号管理'}
         actionRef={actionRef}
-        rowKey="key"
+        rowKey="id"
         search={{
           labelWidth: 140,
           defaultCollapsed: false,
@@ -211,7 +237,7 @@ showHiddenNum: true
           const success = await handleAdd(value as API.AccountsListItem);
           if (success) {
             if (restFormRef.current) {
-              restFormRef.current.resetFields();
+              restFormRef?.current?.resetFields();
             }
             handleModalOpen(false);
             if (actionRef.current) {
@@ -229,7 +255,7 @@ showHiddenNum: true
           ]}
           width="md"
           name="account_id"
-          label="账户名称"
+          label="账号ID"
         />
         <ProFormText
           rules={[

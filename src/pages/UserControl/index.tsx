@@ -5,14 +5,16 @@ import {
   ModalForm,
   PageContainer,
   ProDescriptions,
+  ProFormSelect,
   ProFormText,
   ProTable,
 } from '@ant-design/pro-components';
-import { FormattedMessage, useAccess, useIntl } from '@umijs/max';
+import { useAccess, useRequest } from '@umijs/max';
 import { Button, Drawer, message, Popconfirm } from 'antd';
 import React, { useRef, useState } from 'react';
 import type { FormValueType } from './components/UpdateForm';
 import UpdateForm from './components/UpdateForm';
+import { getCooperators } from '@/services/ant-design-pro/cooperator';
 
 /**
  * @en-US Add node
@@ -47,11 +49,11 @@ const handleUpdate = async (fields: FormValueType) => {
   try {
     await updateUser({
       id: fields.id,
-      modified_by_userid: 0,
       username: fields.username,
       is_active: fields.is_active,
       is_superuser: fields.is_superuser,
       is_admin: fields.is_admin,
+      password: fields.password
     });
     hide();
 
@@ -104,15 +106,16 @@ const TableList: React.FC = () => {
   const [currentRow, setCurrentRow] = useState<API.UserListItem>();
   const { accountEdit } = useAccess();
   const restFormRef = useRef(null);
+
+  const { data: cooperatorList } = useRequest(() => getCooperators({ current: 1, pageSize: 9999 }));
   /**
    * @en-US International configuration
    * @zh-CN 国际化配置
    * */
-  const intl = useIntl();
 
   const columns: ProColumns<API.UserListItem>[] = [
     {
-      title: <FormattedMessage id="pages.userControl.username" defaultMessage="账号名" />,
+      title: "账号名",
       dataIndex: 'username',
       render: (dom, entity) => {
         return (
@@ -128,8 +131,13 @@ const TableList: React.FC = () => {
       },
     },
     {
-      title: <FormattedMessage id="pages.userControl.email" defaultMessage="邮箱" />,
+      title: "邮箱",
       dataIndex: 'email',
+      valueType: 'text',
+    },
+    {
+      title: "关联联创公司",
+      dataIndex: 'cooperator_name',
       valueType: 'text',
     },
     ...(accountEdit
@@ -137,7 +145,7 @@ const TableList: React.FC = () => {
           {
             title: "是否管理员",
             dataIndex: 'is_admin',
-            render: (dom, entity) => {
+            render: (_, entity) => {
               return (
                 <span
                 >
@@ -149,7 +157,7 @@ const TableList: React.FC = () => {
           {
             title: "是否激活",
             dataIndex: 'is_active',
-            render: (dom, entity) => {
+            render: (_, entity) => {
               return (
                 <span
                 >
@@ -161,23 +169,19 @@ const TableList: React.FC = () => {
         ]
       : []),
     {
-      title: (
-        <FormattedMessage id="pages.userControl.created_timestamp" defaultMessage="创建时间" />
-      ),
+      title: "创建时间",
       hideInSearch: true,
       valueType: 'dateTime',
       dataIndex: 'created_timestamp',
     },
     {
-      title: (
-        <FormattedMessage id="pages.userControl.modified_timestamp" defaultMessage="修改时间" />
-      ),
+      title: "修改时间",
       hideInSearch: true,
       valueType: 'dateTime',
       dataIndex: 'modified_timestamp',
     },
     {
-      title: <FormattedMessage id="pages.userControl.option" defaultMessage="操作" />,
+      title: "操作",
       dataIndex: 'option',
       valueType: 'option',
       render: (_, record) => {
@@ -190,7 +194,7 @@ const TableList: React.FC = () => {
               setCurrentRow(record);
             }}
           >
-            <FormattedMessage id="pages.searchTable.update" defaultMessage="编辑" />
+            编辑
           </a>,
           // eslint-disable-next-line react/jsx-key
           <Popconfirm
@@ -216,10 +220,7 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.UserListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.userControl.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={"账号管理"}
         actionRef={actionRef}
         rowKey="key"
         search={false}
@@ -233,7 +234,7 @@ const TableList: React.FC = () => {
                 handleModalOpen(true);
               }}
             >
-              <PlusOutlined /> <FormattedMessage id="pages.userControl.add" defaultMessage="新增" />
+              <PlusOutlined /> 新增
             </Button>,
           ];
         }}
@@ -246,10 +247,7 @@ const TableList: React.FC = () => {
         // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.userControl.createForm.userControl',
-          defaultMessage: '新增',
-        })}
+        title={'新增'}
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}
@@ -273,15 +271,14 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage id="pages.userControl.username" defaultMessage="账号必须输入" />
-              ),
+              message: "账号必须输入",
             },
           ]}
           width="md"
           name="_username"
           label="账号"
         />
+
         <ProFormText
           rules={[
             {
@@ -290,9 +287,7 @@ const TableList: React.FC = () => {
             },
             {
               required: true,
-              message: (
-                <FormattedMessage id="pages.userControl.email" defaultMessage="邮箱必须输入" />
-              ),
+              message: "邮箱必须输入",
             },
           ]}
           width="md"
@@ -303,20 +298,45 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage id="pages.userControl._password" defaultMessage="密码必须输入" />
-              ),
+              message: "密码必须输入",
             },
           ]}
           width="md"
           name="_password"
           label="密码"
         />
+        <ProFormSelect
+          name="cooperator_id"
+          label="联创公司"
+          width="md"
+          rules={[
+            {
+              required: true,
+              message: "联创公司必须选择",
+            },
+          ]}
+          fieldProps={{
+            showSearch:  true,
+            filterOption: (inputValue, option) => {
+              return (option?.label ?? '').toLowerCase().includes(inputValue.toLowerCase()) || (option?.value ?? '')?.toString().includes(inputValue.toLowerCase())
+            }
+          }}
+  
+          options={cooperatorList?.map(_ => ({
+            label: _.name,
+            value: _.id
+          }))}
+          
+          placeholder="请选择一个联创公司关联"
+          rules={[{ required: true, message: '请选择一个联创公司关联' }]}
+        />
       </ModalForm>
       {updateModalOpen && (
         <UpdateForm
+          cooperatorList={cooperatorList}
           onSubmit={async (value) => {
             const success = await handleUpdate({ ...currentRow, ...value });
+            console.log(currentRow,value)
             if (success) {
               handleUpdateModalOpen(false);
               setCurrentRow(undefined);

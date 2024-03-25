@@ -8,7 +8,7 @@ import {
   UploadOutlined,
 } from '@ant-design/icons';
 import { ActionType, PageContainer, ProColumns, ProTable } from '@ant-design/pro-components';
-import { history, request, useRequest } from '@umijs/max';
+import { request, useRequest } from '@umijs/max';
 import {
   Button,
   Divider,

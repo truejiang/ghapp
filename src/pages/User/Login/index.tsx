@@ -12,7 +12,7 @@ import {
 } from '@ant-design/icons';
 import { LoginForm, ProFormText } from '@ant-design/pro-components';
 import { useEmotionCss } from '@ant-design/use-emotion-css';
-import { FormattedMessage, history, SelectLang, useIntl, useModel } from '@umijs/max';
+import { history, SelectLang, useModel } from '@umijs/max';
 import { Alert, message, Tabs, notification } from 'antd';
 import React, { useState } from 'react';
 import { flushSync } from 'react-dom';
@@ -95,8 +95,6 @@ const Login: React.FC = () => {
     };
   });
 
-  const intl = useIntl();
-
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const saveUserInfo = (userInfo: API.CurrentUser) => {
     if (userInfo) {
@@ -122,10 +120,7 @@ const Login: React.FC = () => {
       // }
       // 登录
       if (!!msg.access_token && !!msg.token_type) {
-        const defaultLoginSuccessMessage = intl.formatMessage({
-          id: 'pages.login.success',
-          defaultMessage: '登录成功！',
-        });
+        const defaultLoginSuccessMessage = '登录成功！';
         message.success(defaultLoginSuccessMessage);
         setToken(`${msg.token_type} ${msg.access_token}`);
         setSessionId(msg.session_id)
@@ -155,10 +150,7 @@ const Login: React.FC = () => {
       // 如果失败去设置用户错误信息
       setUserLoginState(msg);
     } catch (error) {
-      const defaultLoginFailureMessage = intl.formatMessage({
-        id: 'pages.login.failure',
-        defaultMessage: '登录失败，请重试！',
-      });
+      const defaultLoginFailureMessage = '登录失败，请重试！';
       console.log(error);
       message.error(defaultLoginFailureMessage);
     }
@@ -167,16 +159,6 @@ const Login: React.FC = () => {
 
   return (
     <div className={containerClassName}>
-      {/* <Helmet>
-        <title>
-          {intl.formatMessage({
-            id: 'menu.login',
-            defaultMessage: '登录页',
-          })}
-          - {Settings.title}
-        </title>
-      </Helmet> */}
-      {/* <Lang /> */}
       <div
         style={{
           flex: '1',
@@ -190,18 +172,11 @@ const Login: React.FC = () => {
           }}
           // logo={<img alt="logo" src="/logo.svg" />}
           title="联创财务分账系统"
-          subTitle={intl.formatMessage({ id: 'pages.layouts.userLayout.title' })}
           initialValues={{
             autoLogin: true,
           }}
           actions={
             [
-              // <FormattedMessage
-              //   key="loginWith"
-              //   id="pages.login.loginWith"
-              //   defaultMessage="其他登录方式"
-              // />,
-              // <ActionIcons key="icons" />,
             ]
           }
           onFinish={async (values) => {
@@ -213,13 +188,6 @@ const Login: React.FC = () => {
             onChange={setType}
             centered
             items={[
-              // {
-              //   key: 'account',
-              //   label: intl.formatMessage({
-              //     id: 'pages.login.accountLogin.tab',
-              //     defaultMessage: '账户密码登录',
-              //   }),
-              // },
               {
                 key: 'email',
                 label: '邮箱登录',
@@ -229,10 +197,7 @@ const Login: React.FC = () => {
 
           {status === 'error' && loginType === 'account' && (
             <LoginMessage
-              content={intl.formatMessage({
-                id: 'pages.login.accountLogin.errorMessage',
-                defaultMessage: '账户或密码错误',
-              })}
+              content={'账户或密码错误'}
             />
           )}
           {type === 'account' && (
@@ -257,19 +222,11 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined />,
                 }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码',
-                })}
+                placeholder={'密码'}
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.password.required"
-                        defaultMessage="请输入密码！"
-                      />
-                    ),
+                    message: "请输入密码！",
                   },
                 ]}
               />
@@ -303,19 +260,11 @@ const Login: React.FC = () => {
                   size: 'large',
                   prefix: <LockOutlined />,
                 }}
-                placeholder={intl.formatMessage({
-                  id: 'pages.login.password.placeholder',
-                  defaultMessage: '密码',
-                })}
+                placeholder={'密码'}
                 rules={[
                   {
                     required: true,
-                    message: (
-                      <FormattedMessage
-                        id="pages.login.password.required"
-                        defaultMessage="请输入密码！"
-                      />
-                    ),
+                    message: "请输入密码！",
                   },
                 ]}
               />

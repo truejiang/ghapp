@@ -7,7 +7,7 @@ import { errorConfig } from './requestErrorConfig';
 import { getUserInfo } from './services/ant-design-pro/user';
 import { getToken } from './utils/indexs';
 const isDev = process.env.NODE_ENV === 'development';
-const loginPath = '/user/login';
+const loginPath = '/login';
 
 /**
  * @see  https://umijs.org/zh-CN/plugins/plugin-initial-state
@@ -90,6 +90,19 @@ export const layout: RunTimeLayoutConfig = ({ initialState, setInitialState }) =
     //   ]
     //   : [],
     menuHeaderRender: undefined,
+    menu: {
+      // 每当 initialState?.currentUser?.userid 发生修改时重新执行 request
+      params: {
+        is_admin: initialState?.currentUser?.is_admin
+      },
+      request: async (params, defaultMenuData) => {
+        // initialState.currentUser 中包含了所有用户信息
+        console.log('ddd', params, defaultMenuData)
+        const { is_admin } = params
+        if(is_admin) return defaultMenuData
+        return defaultMenuData.filter(_ => !_.auth);
+      },
+    },
     // 自定义 403 页面
     // unAccessible: <div>unAccessible</div>,
     // 增加一个 loading 的状态

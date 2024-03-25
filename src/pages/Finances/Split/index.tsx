@@ -1,15 +1,10 @@
-import { getAccounts } from '@/services/ant-design-pro/accounts';
-import { getCooperators } from '@/services/ant-design-pro/cooperator';
-import { addFinance, removeFinance, updateFinance } from '@/services/ant-design-pro/finances';
 import { getGoodsOrderStatus } from '@/services/ant-design-pro/goods-sales';
 import { downloadPost } from '@/utils/dowload';
 import { DownloadOutlined, SmileOutlined } from '@ant-design/icons';
-import type { ActionType, ProColumns } from '@ant-design/pro-components';
 import { PageContainer } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl, useRequest } from '@umijs/max';
-import { Button, DatePicker, Flex, message, Popconfirm, Result, Select, Space } from 'antd';
+import { useRequest } from '@umijs/max';
+import { Button, DatePicker, Flex, message, Result, Select, Space } from 'antd';
 import React, { useRef, useState } from 'react';
-import type { FormValueType } from './components/UpdateForm';
 import { getToken } from '@/utils/indexs';
 import { isEmpty } from 'lodash';
 

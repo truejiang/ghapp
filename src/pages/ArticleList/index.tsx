@@ -222,12 +222,7 @@ const TableList: React.FC = () => {
           rules={[
             {
               required: true,
-              message: (
-                <FormattedMessage
-                  id="pages.articleList.article_title"
-                  defaultMessage="标题必须输入"
-                />
-              ),
+              message: "标题必须输入",
             },
           ]}
           width="md"

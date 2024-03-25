@@ -1,6 +1,5 @@
 import { API } from '@/services/ant-design-pro/typings';
 import { ModalForm, ProFormDigit, ProFormMoney, ProFormText } from '@ant-design/pro-components';
-import { FormattedMessage, useIntl } from '@umijs/max';
 import React from 'react';
 
 export type FormValueType = {
@@ -19,7 +18,6 @@ export type UpdateFormProps = {
 };
 
 const UpdateForm: React.FC<UpdateFormProps> = (props) => {
-  const intl = useIntl();
   return (
     <ModalForm
       title={'编辑'}

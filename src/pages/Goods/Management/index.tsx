@@ -218,10 +218,7 @@ const TableList: React.FC = () => {
   return (
     <PageContainer>
       <ProTable<API.GoodsListItem, API.PageParams>
-        headerTitle={intl.formatMessage({
-          id: 'pages.goods.title',
-          defaultMessage: 'Enquiry form',
-        })}
+        headerTitle={"商品佣金"}
         actionRef={actionRef}
         rowKey="key"
         search={{
@@ -249,10 +246,7 @@ showHiddenNum: true
         // }}
       />
       <ModalForm
-        title={intl.formatMessage({
-          id: 'pages.goods.createForm.goods',
-          defaultMessage: '新增',
-        })}
+        title='新增'
         width="400px"
         open={createModalOpen}
         onOpenChange={handleModalOpen}

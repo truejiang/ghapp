@@ -1,4 +1,4 @@
-import { ModalForm, ProFormSwitch, ProFormText } from '@ant-design/pro-components';
+import { ModalForm, ProFormSelect, ProFormSwitch, ProFormText } from '@ant-design/pro-components';
 import React from 'react';
 
 export type FormValueType = {
@@ -7,6 +7,7 @@ export type FormValueType = {
   type?: string;
   time?: string;
   frequency?: string;
+  cooperatorList?: Record<string,any>[];
 } & Partial<API.UserListItem>;
 
 export type UpdateFormProps = {
@@ -41,6 +42,7 @@ const UpdateForm: React.FC<UpdateFormProps> = (props: React.PropsWithChildren<Up
         width="md"
         name="username"
         label="账号"
+        disabled
       />
       <ProFormText
         rules={[
@@ -57,14 +59,46 @@ const UpdateForm: React.FC<UpdateFormProps> = (props: React.PropsWithChildren<Up
         name="email"
         label="邮箱"
       />
-      <ProFormSwitch
+      <ProFormText
+        width="md"
+        name="password"
+        label="密码"
+        placeholder={"修改密码，不填写则不修改"}
+      />
+      <ProFormSelect
+          name="cooperator_id"
+          label="联创公司"
+          width="md"
+          disabled
+          rules={[
+            {
+              required: true,
+              message: "联创公司必须选择",
+            },
+          ]}
+          fieldProps={{
+            showSearch:  true,
+            filterOption: (inputValue, option) => {
+              return (option?.label ?? '').toLowerCase().includes(inputValue.toLowerCase()) || (option?.value ?? '')?.toString().includes(inputValue.toLowerCase())
+            }
+          }}
+  
+          options={props?.cooperatorList?.map(_ => ({
+            label: _.name,
+            value: _.id
+          }))}
+          
+          placeholder="请选择一个联创公司关联"
+          rules={[{ required: true, message: '请选择一个联创公司关联' }]}
+        />
+      {/* <ProFormSwitch
           name="is_admin"
           label="是否管理员"
           fieldProps={{
             checkedChildren: '开启',
             unCheckedChildren: '关闭',
           }}
-        />
+        /> */}
         <ProFormSwitch
           name="is_active"
           label="是否激活"

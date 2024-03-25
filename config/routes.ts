@@ -19,6 +19,7 @@ export default [
     name: '数据批导',
     icon: 'ImportOutlined',
     path: '/data-batch-import',
+    auth: true,
     routes: [
       {
         name: '数据导入',
@@ -50,15 +51,16 @@ export default [
     ]
   },
   {
-    path: '/user',
     layout: false,
-    routes: [
-      {
-        name: 'login',
-        path: '/user/login',
-        component: './User/Login',
-      },
-    ],
+    name: 'login',
+    path: '/login',
+    component: './User/Login',
+  },
+  {
+    layout: false,
+    name: 'active',
+    path: '/active',
+    component: './ActiveDY',
   },
   {
     name: '商品管理',
@@ -90,6 +92,7 @@ export default [
     name: '财务管理',
     icon: 'AccountBookOutlined',
     path: '/finances',
+    auth: true,
     routes: [
       {
         path: '/finances',
@@ -119,12 +122,12 @@ export default [
       },
     ],
   },
-  
   {
     name: '用户管理',
     icon: 'team',
     path: '/users',
     component: './UserControl',
+    auth: true,
   },
   
   {

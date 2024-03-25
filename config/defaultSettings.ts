@@ -17,7 +17,10 @@ const Settings: ProLayoutProps & {
   // "logo": "https://gw.alipayobjects.com/zos/rmsportal/KDpgvguMpGfqaHPjicRK.svg",
   "token": {},
   "splitMenus": false,
-  "siderMenuType": "sub"
+  "siderMenuType": "sub",
+  "menu": {
+    locale: false,
+  }
 };
 
 export default Settings;
